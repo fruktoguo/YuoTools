@@ -33,6 +33,19 @@ public static class YuoExtension
 
     #region Transform
 
+    public static void ResetTrans(this Transform tran)
+    {
+        tran.position = Vector3.zero;
+        tran.eulerAngles = Vector3.zero;
+        tran.localScale = Vector3.one;
+    }
+    public static void ResetTransLocal(this Transform tran)
+    {
+        tran.localPosition = Vector3.zero;
+        tran.localEulerAngles = Vector3.zero;
+        tran.localScale = Vector3.one;
+    }
+
     #region Position
     public static void SetPosX(this Transform tran, float PosX)
     {
