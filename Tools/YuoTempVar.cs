@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Collections;
+using System;
+
 public static class YuoTempVar
 {
     public static bool boolTemp;

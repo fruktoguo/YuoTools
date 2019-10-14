@@ -52,6 +52,18 @@ public static class YuoExtension
     {
         tran.position = new Vector3(tran.position.x, tran.position.y, PosZ);
     }
+    public static void SetLocalPosX(this Transform tran, float PosX)
+    {
+        tran.position = new Vector3(PosX, tran.position.y, tran.position.z);
+    }
+    public static void SetLocalPosY(this Transform tran, float PosY)
+    {
+        tran.position = new Vector3(tran.position.x, PosY, tran.position.z);
+    }
+    public static void SetLocalPosZ(this Transform tran, float PosZ)
+    {
+        tran.position = new Vector3(tran.position.x, tran.position.y, PosZ);
+    }
     public static bool InRange(this Vector2Int pos, Vector2Int zero, int MaxWidth,int MinWidth, int MaxHeight,int MinHeight)
     {
         (pos, MaxHeight, MinHeight, MaxWidth, MinWidth).Log();
