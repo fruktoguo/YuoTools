@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
-
-public class HideOfDelay : MonoBehaviour
+namespace YuoTools
 {
-    public float Delay;
-    void Start()
+    public class HideOfDelay : MonoBehaviour
     {
-        this.YuoInvoke( () => gameObject.SetActive(false), Delay.Clamp());
+        public float Delay;
+        void Start()
+        {
+            this.YuoInvoke(() => gameObject.SetActive(false), Delay.Clamp());
+        }
     }
 }

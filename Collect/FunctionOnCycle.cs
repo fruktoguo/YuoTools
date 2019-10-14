@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-public class FunctionOnCycle : MonoBehaviour
+namespace YuoTools
 {
-    public UnityEvent start;
-    public UnityEvent update;
-    public UnityEvent destroy;
-    // Start is called before the first frame update
-    void Start()
+    public class FunctionOnCycle : MonoBehaviour
     {
-        start?.Invoke();
-    }
-    // Update is called once per frame
-    void Update()
-    {
-        update?.Invoke();
-    }
-    void OnDestroy()
-    {
-        destroy?.Invoke();
+        public UnityEvent start;
+        public UnityEvent update;
+        public UnityEvent destroy;
+        // Start is called before the first frame update
+        void Start()
+        {
+            start?.Invoke();
+        }
+        // Update is called once per frame
+        void Update()
+        {
+            update?.Invoke();
+        }
+        void OnDestroy()
+        {
+            destroy?.Invoke();
+        }
     }
 }
