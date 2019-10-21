@@ -40,6 +40,12 @@ namespace YuoTools
             tran.localEulerAngles = Vector3.zero;
             tran.localScale = Vector3.one;
         }
+        public static void ResetTrans(this GameObject gameObject)
+        {
+            gameObject.transform.localPosition = Vector3.zero;
+            gameObject.transform.localEulerAngles = Vector3.zero;
+            gameObject.transform.localScale = Vector3.one;
+        }
 
         #region Position
         public static void SetPosX(this Transform tran, float PosX)
@@ -86,14 +92,16 @@ namespace YuoTools
 
         #region GameObject
 
-        public static void Show(this GameObject gameObject)
+        public static GameObject Show(this GameObject gameObject)
         {
             gameObject.SetActive(true);
+            return gameObject;
         }
 
-        public static void Hide(this GameObject gameObject)
+        public static GameObject Hide(this GameObject gameObject)
         {
             gameObject.SetActive(false);
+            return gameObject;
         }
         #endregion
 
