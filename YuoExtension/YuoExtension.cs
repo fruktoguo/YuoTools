@@ -151,6 +151,20 @@ namespace YuoTools
         }
         #endregion
 
+        #region 延迟
+        public static YuoDealyMod YuoDelay(this MonoBehaviour mono, UnityAction action, float delay)
+        {
+            return YuoDelayCon.Instance.Invoke(action, delay);
+        }
+        public static YuoDealyMod YuoDelayRealtime(this MonoBehaviour mono, UnityAction action, float delay)
+        {
+            return YuoDelayCon.Instance.InvokeRealtime(action, delay);
+        }
+        public static void YuoStop(this MonoBehaviour mono, YuoDealyMod yuoInvokeMod)
+        {
+            YuoDelayCon.Instance.StopCor(yuoInvokeMod);
+        }
+        #endregion
     }
 }
 

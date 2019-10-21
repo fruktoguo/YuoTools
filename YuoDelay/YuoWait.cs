@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace YuoTools
 {
-    public class YuoWaitWaitForSec
+    public class YuoWait
     {
 
         static Dictionary<int, WaitForSeconds> waits = new Dictionary<int, WaitForSeconds>();
@@ -12,7 +12,7 @@ namespace YuoTools
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public static WaitForSeconds GetWaitForSeconds(int time)
+        public static WaitForSeconds GetWait(int time = 1000)
         {
             if (!waits.ContainsKey(time))
             {
@@ -20,14 +20,13 @@ namespace YuoTools
             }
             return waits[time];
         }
-
         static Dictionary<int, WaitForSecondsRealtime> waitsRealtime = new Dictionary<int, WaitForSecondsRealtime>();
         /// <summary>
         /// 返回一个不受TimeScale影响的WaitForSeconds,单位(毫秒)
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public static WaitForSecondsRealtime GetWaitForSecondsRealtime(int time)
+        public static WaitForSecondsRealtime GetWaitRealtime(int time)
         {
             if (!waitsRealtime.ContainsKey(time))
             {
