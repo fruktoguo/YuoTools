@@ -46,7 +46,17 @@ namespace YuoTools
             gameObject.transform.localEulerAngles = Vector3.zero;
             gameObject.transform.localScale = Vector3.one;
         }
+        public static Transform Show(this Transform tran)
+        {
+            tran.gameObject.SetActive(true);
+            return tran;
+        }
 
+        public static Transform Hide(this Transform tran)
+        {
+            tran.gameObject.SetActive(false);
+            return tran;
+        }
         #region Position
         public static void SetPosX(this Transform tran, float PosX)
         {
@@ -160,15 +170,15 @@ namespace YuoTools
         #endregion
 
         #region 延迟
-        public static YuoDealyMod YuoDelay(this MonoBehaviour mono, UnityAction action, float delay)
+        public static YuoDelayMod YuoDelay<T>(this T obj, UnityAction action, float delay)
         {
             return YuoDelayCon.Instance.Invoke(action, delay);
         }
-        public static YuoDealyMod YuoDelayRealtime(this MonoBehaviour mono, UnityAction action, float delay)
+        public static YuoDelayMod YuoDelayRealtime<T>(this T obj, UnityAction action, float delay)
         {
             return YuoDelayCon.Instance.InvokeRealtime(action, delay);
         }
-        public static void YuoStop(this MonoBehaviour mono, YuoDealyMod yuoInvokeMod)
+        public static void YuoStop<T>(this T obj, YuoDelayMod yuoInvokeMod)
         {
             YuoDelayCon.Instance.StopCor(yuoInvokeMod);
         }
