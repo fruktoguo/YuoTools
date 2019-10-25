@@ -109,10 +109,12 @@ namespace YuoTools
         public Coroutine coroutine;
         public void AddDelay(float time)
         {
+            if (time <= 0) return;
             ExtraDelayTime.Add(time);
         }
         public void SetDelay(float time)
         {
+            if (time < 0) return;
             YuoTempVar.floatTemp = DelayTime;
             foreach (var item in ExtraDelayTime)
             {
