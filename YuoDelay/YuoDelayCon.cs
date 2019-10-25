@@ -7,65 +7,67 @@ namespace YuoTools
 {
     public class YuoDelayCon : SingletonMono<YuoDelayCon>
     {
-        public List<YuoDealyMod> Invokes = new List<YuoDealyMod>();
-        public List<YuoDealyMod> InvokesRealtime = new List<YuoDealyMod>();
+        public List<YuoDelayMod> Invokes = new List<YuoDelayMod>();
+        public List<YuoDelayMod> InvokesRealtime = new List<YuoDelayMod>();
 
-        public List<YuoDealyMod> Pools = new List<YuoDealyMod>();
-        IEnumerator IYuoDelay(YuoDealyMod yuoDelayMod)
+        public List<YuoDelayMod> Pools = new List<YuoDelayMod>();
+        IEnumerator IYuoDelay(YuoDelayMod yuoDelayMod)
         {
             yield return null;
-            yield return YuoWait.GetWait((int)yuoDelayMod.DelayTime * 1000);
-            for (int i = 0; i < yuoDelayMod.AddDelayTime.Count; i++)
+            yield return YuoWait.GetWait((int)(yuoDelayMod.DelayTime * 1000));
+
+            while (yuoDelayMod.ExtraDelayTime.Count > 0)
             {
-                yield return YuoWait.GetWait((int)yuoDelayMod.AddDelayTime[i] * 1000);
+                YuoTempVar.intTemp = (int)(yuoDelayMod.ExtraDelayTime[0] * 1000);
+                yuoDelayMod.ExtraDelayTime.RemoveAt(0);
+                yield return YuoWait.GetWait(YuoTempVar.intTemp);
             }
-            if (yuoDelayMod.End)
+            if (!yuoDelayMod.End)
             {
-                Invokes.Remove(yuoDelayMod);
-                yield break;
+                yuoDelayMod.action?.Invoke();
             }
-            yuoDelayMod.action?.Invoke();
             Invokes.Remove(yuoDelayMod);
             Pools.Add(yuoDelayMod);
             yield break;
         }
-        IEnumerator IYuoDelayRealtime(YuoDealyMod yuoDelayMod)
+        IEnumerator IYuoDelayRealtime(YuoDelayMod yuoDelayMod)
         {
             yield return null;
-            yield return YuoWait.GetWaitRealtime((int)yuoDelayMod.DelayTime * 1000);
-            for (int i = 0; i < yuoDelayMod.AddDelayTime.Count; i++)
+            yield return YuoWait.GetWaitRealtime((int)(yuoDelayMod.DelayTime * 1000));
+
+            while (yuoDelayMod.ExtraDelayTime.Count > 0)
             {
-                yield return YuoWait.GetWaitRealtime((int)yuoDelayMod.AddDelayTime[i] * 1000);
+                YuoTempVar.intTemp = (int)(yuoDelayMod.ExtraDelayTime[0] * 1000);
+                yuoDelayMod.ExtraDelayTime.RemoveAt(0);
+                yield return YuoWait.GetWaitRealtime(YuoTempVar.intTemp);
             }
-            if (yuoDelayMod.End)
+            if (!yuoDelayMod.End)
             {
-                InvokesRealtime.Remove(yuoDelayMod);
-                yield break;
+                yuoDelayMod.action?.Invoke();
             }
-            yuoDelayMod.action?.Invoke();
             InvokesRealtime.Remove(yuoDelayMod);
             Pools.Add(yuoDelayMod);
             yield break;
         }
 
-        public YuoDealyMod Invoke(UnityAction unityAction, float delay)
+        public YuoDelayMod Invoke(UnityAction unityAction, float delay)
         {
-            tempMod = GetMod(unityAction,delay);
-            StartCoroutine(IYuoDelay(tempMod));
+            tempMod = GetMod(unityAction, delay);
+            tempMod.coroutine = StartCoroutine(IYuoDelay(tempMod));
             Invokes.Add(tempMod);
             return tempMod;
         }
-        YuoDealyMod tempMod;
-        public YuoDealyMod InvokeRealtime(UnityAction unityAction, float delay)
+        YuoDelayMod tempMod;
+        public YuoDelayMod InvokeRealtime(UnityAction unityAction, float delay)
         {
-            tempMod = GetMod(unityAction,delay);
-            StartCoroutine(IYuoDelayRealtime(tempMod));
+            tempMod = GetMod(unityAction, delay);
+            tempMod.coroutine = StartCoroutine(IYuoDelayRealtime(tempMod));
             InvokesRealtime.Add(tempMod);
             return tempMod;
         }
-        YuoDealyMod GetMod(UnityAction unityAction, float delay)
+        YuoDelayMod GetMod(UnityAction unityAction, float delay)
         {
-            if (Pools.Count>0)
+            if (Pools.Count > 0)
             {
                 tempMod = Pools[0];
                 tempMod.ReSet();
@@ -76,52 +78,80 @@ namespace YuoTools
             }
             else
             {
-                tempMod = new YuoDealyMod() { StartTime = DateTime.Now.ToString(), DelayTime = delay, action = unityAction };
+                tempMod = new YuoDelayMod() { StartTime = DateTime.Now.ToString(), DelayTime = delay, action = unityAction };
             }
             return tempMod;
         }
-        public void StopCor(YuoDealyMod yuoInvokeMod)
+        public void StopCor(YuoDelayMod yuoInvokeMod)
         {
             yuoInvokeMod.End = true;
+        }
+        public void StopForce(YuoDelayMod yuoDelayMod)
+        {
+            StopCoroutine(yuoDelayMod.coroutine);
+            Invokes.Remove(yuoDelayMod);
+            Pools.Add(yuoDelayMod);
         }
     }
 
     [Serializable]
-    public class YuoDealyMod
+    public class YuoDelayMod
     {
         [Header("启动时间")]
         public string StartTime;
         [Header("延迟时间")]
         public float DelayTime;
         [Header("额外的延迟时间")]
-        public List<float> AddDelayTime = new List<float>();
+        public List<float> ExtraDelayTime = new List<float>();
         [Header("是否提前终止")]
         public bool End = false;
         public UnityAction action;
+        public Coroutine coroutine;
         public void AddDelay(float time)
         {
-            AddDelayTime.Add(time);
+            ExtraDelayTime.Add(time);
+        }
+        public void SetDelay(float time)
+        {
+            YuoTempVar.floatTemp = DelayTime;
+            foreach (var item in ExtraDelayTime)
+            {
+                YuoTempVar.floatTemp += item;
+            }
+            if (time > YuoTempVar.floatTemp)
+            {
+                AddDelay(time - YuoTempVar.floatTemp);
+            }
+            else
+            {
+                YuoDelayCon.Instance.StopForce(this);
+                YuoDelay.SwitchMod(this, YuoDelay.Delay(action, time));
+            }
         }
         public void ReSet()
         {
             StartTime = "";
             DelayTime = 0;
-            AddDelayTime.Clear();
+            ExtraDelayTime.Clear();
             End = false;
             action = null;
         }
     }
     public static class YuoDelay
     {
-        public static YuoDealyMod Delay(UnityAction action, float delay)
+        public static void SwitchMod(YuoDelayMod mod1, YuoDelayMod mod2)
+        {
+            mod1 = mod2;
+        }
+        public static YuoDelayMod Delay(UnityAction action, float delay)
         {
             return YuoDelayCon.Instance.Invoke(action, delay);
         }
-        public static YuoDealyMod DelayRealtime(UnityAction action, float delay)
+        public static YuoDelayMod DelayRealtime(UnityAction action, float delay)
         {
             return YuoDelayCon.Instance.InvokeRealtime(action, delay);
         }
-        public static void Stop(YuoDealyMod yuoInvokeMod)
+        public static void Stop(YuoDelayMod yuoInvokeMod)
         {
             YuoDelayCon.Instance.StopCor(yuoInvokeMod);
         }
