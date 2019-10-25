@@ -6,13 +6,13 @@ namespace YuoTools
 {
     public class SaveGObjSate : Singleton<SaveGObjSate>
     {
-        public Dictionary<Transform, Dictionary<Transform,SateData>> datas
-            = new Dictionary<Transform, Dictionary<Transform,SateData>>();
+        public Dictionary<Transform, Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>> datas
+            = new Dictionary<Transform, Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>>();
+        Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)> dataTemp
+            = new Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>();
         Color colorTemp = new Color(0, 0, 0, 0);
         public void Save(Transform tran)
         {
-            Dictionary<Transform,SateData> dataTemp
-                = new Dictionary<Transform, SateData >();
             Transform[] transforms = tran.GetComponentsInChildren<Transform>();
             Image[] colors = tran.GetComponentsInChildren<Image>();
             dataTemp.Clear();
@@ -20,15 +20,14 @@ namespace YuoTools
             {
                 if (tran != item)
                 {
-                    dataTemp.Add(item,new SateData (item.gameObject.activeSelf, item.position, item.rotation, item.localScale, Color.white, null));
+                    dataTemp.Add(item, (item.gameObject.activeSelf, item.position, item.rotation, item.localScale, Color.white, null));
                 }
             }
             foreach (var item in colors)
             {
                 if (dataTemp.ContainsKey(item.transform))
                 {
-                    dataTemp[item.transform].color = item.color;
-                    dataTemp[item.transform].Image = item;
+                    dataTemp[item.transform] = (dataTemp[item.transform].active, dataTemp[item.transform].pos, dataTemp[item.transform].rot, dataTemp[item.transform].scale, item.color, item);
                 }
             }
             if (!datas.ContainsKey(tran))
@@ -44,7 +43,8 @@ namespace YuoTools
         {
             if (!datas.ContainsKey(tran))
                 return;
-            foreach (var item in datas[tran])
+            dataTemp = datas[tran];
+            foreach (var item in dataTemp)
             {
                 if (item.Key != null)
                 {
@@ -57,27 +57,6 @@ namespace YuoTools
                         item.Value.Image.color = item.Value.color;
                     }
                 }
-            }
-        }
-
-
-        public class SateData
-        {
-            public bool active;
-            public Vector3 pos;
-            public Quaternion rot;
-            public Vector3 scale;
-            public Color color;
-            public Image Image;
-
-            public SateData(bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image image)
-            {
-                this.active = active;
-                this.pos = pos;
-                this.rot = rot;
-                this.scale = scale;
-                this.color = color;
-                Image = image;
             }
         }
     }
