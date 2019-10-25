@@ -7,8 +7,7 @@
 		ResetTrans:设置为默认值,即Inspector面板上的Reset
 		SetposX、Y、Z:单独设置xyz三个坐标中的一个
 		SetLocalPos:同上
-		Vector2Int:
-			InRange:判断这个点是否在指定范围内
+		Vector2Int.InRange:判断这个点是否在指定范围内
 #	GameObject:
 		Show/Hide:显示/隐藏物体
 #	String:
