@@ -58,29 +58,41 @@ namespace YuoTools
             return tran;
         }
         #region Position
-        public static void SetPosX(this Transform tran, float PosX)
+        public static Vector3 SetPosX(this Transform tran, float PosX)
         {
-            tran.position = new Vector3(PosX, tran.position.y, tran.position.z);
+            YuoTempVar.v3Temp.Set(PosX, tran.position.y, tran.position.z);
+            tran.position = YuoTempVar.v3Temp;
+            return tran.position;
         }
-        public static void SetPosY(this Transform tran, float PosY)
+        public static Vector3 SetPosY(this Transform tran, float PosY)
         {
-            tran.position = new Vector3(tran.position.x, PosY, tran.position.z);
+            YuoTempVar.v3Temp.Set(tran.position.x, PosY, tran.position.z);
+            tran.position = YuoTempVar.v3Temp;
+            return tran.position;
         }
-        public static void SetPosZ(this Transform tran, float PosZ)
+        public static Vector3 SetPosZ(this Transform tran, float PosZ)
         {
-            tran.position = new Vector3(tran.position.x, tran.position.y, PosZ);
+            YuoTempVar.v3Temp.Set(tran.position.x, tran.position.y, PosZ);
+            tran.position = YuoTempVar.v3Temp;
+            return tran.position;
         }
-        public static void SetLocalPosX(this Transform tran, float PosX)
+        public static Vector3 SetLocalPosX(this Transform tran, float PosX)
         {
-            tran.position = new Vector3(PosX, tran.position.y, tran.position.z);
+            YuoTempVar.v3Temp.Set(PosX, tran.localPosition.y, tran.localPosition.z);
+            tran.localPosition = YuoTempVar.v3Temp;
+            return tran.localPosition;
         }
-        public static void SetLocalPosY(this Transform tran, float PosY)
+        public static Vector3 SetLocalPosY(this Transform tran, float PosY)
         {
-            tran.position = new Vector3(tran.position.x, PosY, tran.position.z);
+            YuoTempVar.v3Temp.Set(tran.localPosition.x, PosY, tran.localPosition.z);
+            tran.localPosition = YuoTempVar.v3Temp;
+            return tran.localPosition;
         }
-        public static void SetLocalPosZ(this Transform tran, float PosZ)
+        public static Vector3 SetLocalPosZ(this Transform tran, float PosZ)
         {
-            tran.position = new Vector3(tran.position.x, tran.position.y, PosZ);
+            YuoTempVar.v3Temp.Set(tran.localPosition.x, tran.localPosition.y,PosZ);
+            tran.localPosition = YuoTempVar.v3Temp;
+            return tran.localPosition;
         }
         public static bool InRange(this Vector2Int pos, Vector2Int zero, int MaxWidth, int MinWidth, int MaxHeight, int MinHeight)
         {
@@ -166,6 +178,15 @@ namespace YuoTools
         {
             i = Mathf.Clamp(i, 0, i);
             return i;
+        }
+
+        public static bool InRange(this float i,float min,float max)
+        {
+            return i >= min && i <= max;
+        }
+        public static bool InRange(this int i,int min,int max)
+        {
+            return i >= min && i <= max;
         }
         #endregion
 
