@@ -21,5 +21,7 @@
 									SetDelay:可以为还未执行的YuoDelay刚改等待时间,可以比原来时间小
 ### 	MouseClickManger:
 						封装了一个判断鼠标是否连点的管理器,如双击三击(可配置),可以通过AddCombo(触发的连击次数,具体方法)
+### 	ExtractorManger:
+						封装了一个根据概率抽东西的管理器(抽奖或者根据配表随机的时候用)
 ### 	YuoTempVar:
 						一些全局的静态变量,可作为临时变量使用
