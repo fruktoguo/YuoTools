@@ -57,6 +57,13 @@ namespace YuoTools
             tran.gameObject.SetActive(false);
             return tran;
         }
+
+        public static RectTransform RectMove(this RectTransform rect, Vector2 dir, float needTime, float Distance, UnityAction EndAction = null)
+        {
+            YuoTweenCon.Instance.RectMove(rect, dir, needTime, Distance, EndAction);
+            return rect;
+        }
+
         #region Position
         public static Vector3 SetPosX(this Transform tran, float PosX)
         {
@@ -123,6 +130,13 @@ namespace YuoTools
         public static GameObject Hide(this GameObject gameObject)
         {
             gameObject.SetActive(false);
+            return gameObject;
+        }
+
+        public static GameObject ReShow(this GameObject gameObject)
+        {
+            gameObject.Hide();
+            gameObject.Show();
             return gameObject;
         }
         #endregion

@@ -18,5 +18,6 @@ namespace YuoTools
         public static Text textTemp;
         public static Transform tranTemp;
         public static GameObject goTemp;
+        public static Dictionary<int, int> a;
     }
 }

@@ -7,21 +7,12 @@ namespace YuoTools
 {
     public class YuoTweenCon : SingletonMono<YuoTweenCon>
     {
-        public void YuoStartCoroutine(IEnumerator enumerator)
-        {
-            StartCoroutine(enumerator);
-        }
+        public void YuoStartCoroutine(IEnumerator enumerator) => StartCoroutine(enumerator);
 
-        public void PlayTextUpAndFade(Text text, float upDis, float overTime)
-        {
-            YuoStartCoroutine(TextUpAndFade(text, upDis, overTime));
-        }
+        public void PlayTextUpAndFade(Text text, float upDis, float overTime) => YuoStartCoroutine(TextUpAndFade(text, upDis, overTime));
 
-        public void PlayMoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0)
-        {
-            StartCoroutine(MoveTo(tran, end, Speed, EndAction, delayTime));
-        }
-
+        public void PlayMoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, Speed, EndAction, delayTime));
+        public void RectMove(RectTransform rect,Vector2 dir,float needTime,float Distance,UnityAction EndAction = null) => StartCoroutine(IRectMove(rect,dir,needTime,Distance,EndAction));
         #region
         /// <summary>
         /// 移动到目标位置
@@ -34,7 +25,7 @@ namespace YuoTools
         /// <returns></returns>
         IEnumerator MoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0)
         {
-            yield return new WaitForSeconds(delayTime);
+            yield return YuoWait.GetWait(delayTime);
             while (true)
             {
                 yield return null;
@@ -75,6 +66,21 @@ namespace YuoTools
             }
         }
 
+        public IEnumerator IRectMove(RectTransform rect,Vector2 dir,float needTime,float Distance ,UnityAction EndAction = null)
+        {
+            float timer = needTime;
+            while (true)
+            {
+                yield return null;
+                timer -= Time.deltaTime;
+                rect.anchoredPosition += dir.normalized / needTime* Distance * Time.deltaTime;
+                if (timer <= 0)
+                {
+                    EndAction?.Invoke();
+                    yield break;
+                }
+            }
+        }
         #endregion
 
     }

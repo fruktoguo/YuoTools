@@ -14,13 +14,13 @@ namespace YuoTools
         IEnumerator IYuoDelay(YuoDelayMod yuoDelayMod)
         {
             yield return null;
-            yield return YuoWait.GetWait((int)(yuoDelayMod.DelayTime * 1000));
+            yield return YuoWait.GetWait(yuoDelayMod.DelayTime);
 
             while (yuoDelayMod.ExtraDelayTime.Count > 0)
             {
-                YuoTempVar.intTemp = (int)(yuoDelayMod.ExtraDelayTime[0] * 1000);
+                YuoTempVar.floatTemp = yuoDelayMod.ExtraDelayTime[0];
                 yuoDelayMod.ExtraDelayTime.RemoveAt(0);
-                yield return YuoWait.GetWait(YuoTempVar.intTemp);
+                yield return YuoWait.GetWait(YuoTempVar.floatTemp);
             }
             if (!yuoDelayMod.End)
             {
@@ -60,25 +60,27 @@ namespace YuoTools
         YuoDelayMod tempMod;
         public YuoDelayMod InvokeRealtime(UnityAction unityAction, float delay)
         {
-            tempMod = GetMod(unityAction, delay);
+            tempMod = GetMod(unityAction, delay, true);
             tempMod.coroutine = StartCoroutine(IYuoDelayRealtime(tempMod));
             InvokesRealtime.Add(tempMod);
             return tempMod;
         }
-        YuoDelayMod GetMod(UnityAction unityAction, float delay)
+        YuoDelayMod GetMod(UnityAction unityAction, float delay, bool realtime = false)
         {
             if (Pools.Count > 0)
             {
+                YuoTempVar.intTemp = 0;
                 tempMod = Pools[0];
                 tempMod.ReSet();
                 tempMod.action = unityAction;
                 tempMod.DelayTime = delay;
                 tempMod.StartTime = DateTime.Now.ToString();
+                tempMod.IsRealtime = realtime;
                 Pools.Remove(tempMod);
             }
             else
             {
-                tempMod = new YuoDelayMod() { StartTime = DateTime.Now.ToString(), DelayTime = delay, action = unityAction };
+                tempMod = new YuoDelayMod() { StartTime = DateTime.Now.ToString(), DelayTime = delay, action = unityAction, IsRealtime = realtime };
             }
             return tempMod;
         }
@@ -89,7 +91,10 @@ namespace YuoTools
         public void StopForce(YuoDelayMod yuoDelayMod)
         {
             StopCoroutine(yuoDelayMod.coroutine);
-            Invokes.Remove(yuoDelayMod);
+            if (yuoDelayMod.IsRealtime)
+                InvokesRealtime.Remove(yuoDelayMod);
+            else
+                Invokes.Remove(yuoDelayMod);
             Pools.Add(yuoDelayMod);
         }
     }
@@ -97,6 +102,8 @@ namespace YuoTools
     [Serializable]
     public class YuoDelayMod
     {
+        [Header("方法名字")]
+        public string Name;
         [Header("启动时间")]
         public string StartTime;
         [Header("延迟时间")]
@@ -105,6 +112,10 @@ namespace YuoTools
         public List<float> ExtraDelayTime = new List<float>();
         [Header("是否提前终止")]
         public bool End = false;
+        /// <summary>
+        /// 是否受TimeScale影响
+        /// </summary>
+        public bool IsRealtime;
         public UnityAction action;
         public Coroutine coroutine;
         public void AddDelay(float time)
@@ -127,7 +138,10 @@ namespace YuoTools
             else
             {
                 YuoDelayCon.Instance.StopForce(this);
-                YuoDelay.SwitchMod(this, YuoDelay.Delay(action, time));
+                if (IsRealtime)
+                    YuoDelay.SwitchMod(this, this.YuoDelayRealtime(action, time));
+                else
+                    YuoDelay.SwitchMod(this, this.YuoDelay(action, time));
             }
         }
         public void ReSet()
@@ -137,6 +151,10 @@ namespace YuoTools
             ExtraDelayTime.Clear();
             End = false;
             action = null;
+        }
+        public void SetName(string name)
+        {
+            Name = name;
         }
     }
     public static class YuoDelay

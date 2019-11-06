@@ -7,7 +7,7 @@ public class MouseClickManger : SingletonMono<MouseClickManger>
 {
     public int MaxComboNum = 6;
     float LastClickTime = 0;
-    float ComboTime = 0.2f;
+    public float ComboTime = 0.3f;
     UnityAction[] action;
     public void SetComboTime(float time)
     {
