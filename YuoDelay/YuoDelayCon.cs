@@ -18,9 +18,9 @@ namespace YuoTools
 
             while (yuoDelayMod.ExtraDelayTime.Count > 0)
             {
-                YuoTempVar.floatTemp = yuoDelayMod.ExtraDelayTime[0];
+                Temp.Float = yuoDelayMod.ExtraDelayTime[0];
                 yuoDelayMod.ExtraDelayTime.RemoveAt(0);
-                yield return YuoWait.GetWait(YuoTempVar.floatTemp);
+                yield return YuoWait.GetWait(Temp.Float);
             }
             if (!yuoDelayMod.End)
             {
@@ -37,9 +37,9 @@ namespace YuoTools
 
             while (yuoDelayMod.ExtraDelayTime.Count > 0)
             {
-                YuoTempVar.intTemp = (int)(yuoDelayMod.ExtraDelayTime[0] * 1000);
+                Temp.Int = (int)(yuoDelayMod.ExtraDelayTime[0] * 1000);
                 yuoDelayMod.ExtraDelayTime.RemoveAt(0);
-                yield return YuoWait.GetWaitRealtime(YuoTempVar.intTemp);
+                yield return YuoWait.GetWaitRealtime(Temp.Int);
             }
             if (!yuoDelayMod.End)
             {
@@ -69,7 +69,7 @@ namespace YuoTools
         {
             if (Pools.Count > 0)
             {
-                YuoTempVar.intTemp = 0;
+                Temp.Int = 0;
                 tempMod = Pools[0];
                 tempMod.ReSet();
                 tempMod.action = unityAction;
@@ -126,14 +126,14 @@ namespace YuoTools
         public void SetDelay(float time)
         {
             if (time < 0) return;
-            YuoTempVar.floatTemp = DelayTime;
+            Temp.Float = DelayTime;
             foreach (var item in ExtraDelayTime)
             {
-                YuoTempVar.floatTemp += item;
+                Temp.Float += item;
             }
-            if (time > YuoTempVar.floatTemp)
+            if (time > Temp.Float)
             {
-                AddDelay(time - YuoTempVar.floatTemp);
+                AddDelay(time - Temp.Float);
             }
             else
             {

@@ -22,12 +22,12 @@ namespace YuoTools
         //}
         public static WaitForSeconds GetWait(float time = 1)
         {
-            YuoTempVar.intTemp = (int)(time * 1000);
-            if (!waits.ContainsKey(YuoTempVar.intTemp))
+            Temp.Int = (int)(time * 1000);
+            if (!waits.ContainsKey(Temp.Int))
             {
-                waits.Add(YuoTempVar.intTemp, new WaitForSeconds(time));
+                waits.Add(Temp.Int, new WaitForSeconds(time));
             }
-            return waits[YuoTempVar.intTemp];
+            return waits[Temp.Int];
         }
         static Dictionary<int, WaitForSecondsRealtime> waitsRealtime = new Dictionary<int, WaitForSecondsRealtime>();
         /// <summary>
@@ -45,12 +45,12 @@ namespace YuoTools
         //}
         public static WaitForSecondsRealtime GetWaitRealtime(float time = 1)
         {
-            YuoTempVar.intTemp = (int)(time * 1000);
-            if (!waitsRealtime.ContainsKey(YuoTempVar.intTemp))
+            Temp.Int = (int)(time * 1000);
+            if (!waitsRealtime.ContainsKey(Temp.Int))
             {
-                waitsRealtime.Add(YuoTempVar.intTemp, new WaitForSecondsRealtime(time));
+                waitsRealtime.Add(Temp.Int, new WaitForSecondsRealtime(time));
             }
-            return waitsRealtime[YuoTempVar.intTemp];
+            return waitsRealtime[Temp.Int];
         }
     }
 }
