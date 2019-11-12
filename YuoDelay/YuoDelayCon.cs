@@ -49,6 +49,12 @@ namespace YuoTools
             Pools.Add(yuoDelayMod);
             yield break;
         }
+        IEnumerator IYuoDelayLoad<T>(UnityAction action,T obj)
+        {
+            yield return obj;
+            action?.Invoke();
+            yield break;
+        }
 
         public YuoDelayMod Invoke(UnityAction unityAction, float delay)
         {
@@ -56,6 +62,10 @@ namespace YuoTools
             tempMod.coroutine = StartCoroutine(IYuoDelay(tempMod));
             Invokes.Add(tempMod);
             return tempMod;
+        }
+        public void Invoke<T>(UnityAction unityAction, T delay)
+        {
+            StartCoroutine(IYuoDelayLoad(unityAction, delay));
         }
         YuoDelayMod tempMod;
         public YuoDelayMod InvokeRealtime(UnityAction unityAction, float delay)
@@ -139,9 +149,9 @@ namespace YuoTools
             {
                 YuoDelayCon.Instance.StopForce(this);
                 if (IsRealtime)
-                    YuoDelay.SwitchMod(this, this.YuoDelayRealtime(action, time));
+                    Delay.SwitchMod(this, this.YuoDelayRealtime(action, time));
                 else
-                    YuoDelay.SwitchMod(this, this.YuoDelay(action, time));
+                    Delay.SwitchMod(this, this.YuoDelay(action, time));
             }
         }
         public void ReSet()
@@ -157,13 +167,13 @@ namespace YuoTools
             Name = name;
         }
     }
-    public static class YuoDelay
+    public static class Delay
     {
         public static void SwitchMod(YuoDelayMod mod1, YuoDelayMod mod2)
         {
             mod1 = mod2;
         }
-        public static YuoDelayMod Delay(UnityAction action, float delay)
+        public static YuoDelayMod YuoDelay(UnityAction action, float delay)
         {
             return YuoDelayCon.Instance.Invoke(action, delay);
         }
@@ -174,6 +184,26 @@ namespace YuoTools
         public static void Stop(YuoDelayMod yuoInvokeMod)
         {
             YuoDelayCon.Instance.StopCor(yuoInvokeMod);
+        }
+        public static YuoDelayMod YuoDelay<T>(this T obj, UnityAction action, float delay)
+        {
+            return YuoDelayCon.Instance.Invoke(action, delay);
+        }
+        public static YuoDelayMod YuoDelayRealtime<T>(this T obj, UnityAction action, float delay)
+        {
+            return YuoDelayCon.Instance.InvokeRealtime(action, delay);
+        }
+        public static void YuoStop<T>(this T obj, YuoDelayMod yuoInvokeMod)
+        {
+            YuoDelayCon.Instance.StopCor(yuoInvokeMod);
+        }
+        public static void YuoDelay<T>(this object obj,T load, UnityAction action)
+        {
+            YuoDelayCon.Instance.Invoke(action,load);
+        }
+        public static void YuoDelay<T>(UnityAction action,T load)
+        {
+            YuoDelayCon.Instance.Invoke(action,load);
         }
     }
 }

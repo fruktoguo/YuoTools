@@ -203,21 +203,6 @@ namespace YuoTools
             return i >= min && i <= max;
         }
         #endregion
-
-        #region 延迟
-        public static YuoDelayMod YuoDelay<T>(this T obj, UnityAction action, float delay)
-        {
-            return YuoDelayCon.Instance.Invoke(action, delay);
-        }
-        public static YuoDelayMod YuoDelayRealtime<T>(this T obj, UnityAction action, float delay)
-        {
-            return YuoDelayCon.Instance.InvokeRealtime(action, delay);
-        }
-        public static void YuoStop<T>(this T obj, YuoDelayMod yuoInvokeMod)
-        {
-            YuoDelayCon.Instance.StopCor(yuoInvokeMod);
-        }
-        #endregion
     }
 }
 
