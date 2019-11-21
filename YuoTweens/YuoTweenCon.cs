@@ -11,30 +11,37 @@ namespace YuoTools
 
         public void PlayTextUpAndFade(Text text, float upDis, float overTime) => YuoStartCoroutine(TextUpAndFade(text, upDis, overTime));
 
-        public void PlayMoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, Speed, EndAction, delayTime));
-        public YuoTweenModForRect RectMove(RectTransform rect, Vector2 dir, float needTime, float Distance, YuoTweenModForRect mod)
-        {
-            StartCoroutine(IRectMove(rect, dir, needTime, Distance, mod));
-            return mod;
-        }
-        #region IEnumerator
+        public void PlayMoveTo(Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, needTime, EndAction, delayTime));
+        public void RectMove(RectTransform rect,Vector2 dir,float needTime,float Distance,UnityAction EndAction = null) => StartCoroutine(IRectMove(rect,dir,needTime,Distance,EndAction));
+        #region
         /// <summary>
         /// 移动到目标位置
         /// </summary>
         /// <param name="tran"></param>
         /// <param name="end"></param>
-        /// <param name="Speed"></param>
+        /// <param name="needTime"></param>
         /// <param name="UpdateAction"></param>
         /// <param name="EndAction"></param>
         /// <returns></returns>
-        IEnumerator MoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0)
+        IEnumerator MoveTo(Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0)
         {
+            float moveSpeed =Vector3.Distance(end,tran.position) / needTime;
             yield return YuoWait.GetWait(delayTime);
             while (true)
             {
                 yield return null;
-                tran.position = Vector3.MoveTowards(tran.position, end, Speed);
-                if (Vector3.Distance(tran.position, end) < 0.001f)
+                if (tran == null)
+                {
+                    yield break;
+                }
+                if (Vector3.Distance(tran.position,end)<= moveSpeed*Time.deltaTime)
+                {
+                    tran.position = end;
+                    EndAction?.Invoke();
+                    yield break;
+                }
+                tran.position += (end - tran.position).normalized * moveSpeed * Time.deltaTime;
+                if (Vector3.Distance(tran.position, end) < 0.01f)
                 {
                     EndAction?.Invoke();
                     yield break;
@@ -70,44 +77,31 @@ namespace YuoTools
             }
         }
 
-        public IEnumerator IRectMove(RectTransform rect, Vector2 dir, float needTime, float Distance, YuoTweenModForRect mod)
+        public IEnumerator IRectMove(RectTransform rect,Vector2 dir,float needTime,float Distance ,UnityAction EndAction = null)
         {
             float timer = needTime;
             while (true)
             {
                 yield return null;
                 timer -= Time.deltaTime;
-                rect.anchoredPosition += dir.normalized / needTime * Distance * Time.deltaTime;
+                rect.anchoredPosition += dir.normalized / needTime* Distance * Time.deltaTime;
                 if (timer <= 0)
                 {
-                    if (mod.Upend)
-                    {
-                        timer = needTime;
-                        mod.Upend = false;
-                        dir *= -1;
-                    }
-                    else
-                    {
-                        mod.EndAction?.Invoke();
-                        yield break;
-                    }
+                    EndAction?.Invoke();
+                    yield break;
                 }
             }
         }
         #endregion
 
-        public class YuoTweenMod
+    }
+    public static class TweenEx
+    {
+        public static Transform MoveTo(this Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0)
         {
-            public UnityAction EndAction;
+            YuoTweenCon.Instance.PlayMoveTo(tran, end, needTime, EndAction, delayTime);
+            return tran;
         }
-        public class YuoTweenModForRect : YuoTweenMod
-        {
-            public bool Upend;
-            public YuoTweenModForRect SetUpend()
-            {
-                Upend = true;
-                return this;
-            }
-        }
+
     }
 }

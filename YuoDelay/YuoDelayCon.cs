@@ -7,10 +7,12 @@ namespace YuoTools
 {
     public class YuoDelayCon : SingletonMono<YuoDelayCon>
     {
-        public List<YuoDelayMod> Invokes = new List<YuoDelayMod>();
-        public List<YuoDelayMod> InvokesRealtime = new List<YuoDelayMod>();
-
-        public List<YuoDelayMod> Pools = new List<YuoDelayMod>();
+        [SerializeField]
+        List<YuoDelayMod> Invokes = new List<YuoDelayMod>();
+        [SerializeField]
+        List<YuoDelayMod> InvokesRealtime = new List<YuoDelayMod>();
+        [SerializeField]
+        List<YuoDelayMod> Pools = new List<YuoDelayMod>();
         IEnumerator IYuoDelay(YuoDelayMod yuoDelayMod)
         {
             yield return null;
@@ -80,7 +82,7 @@ namespace YuoTools
             if (Pools.Count > 0)
             {
                 Temp.Int = 0;
-                tempMod = Pools[0];
+                tempMod = Pools[Pools.Count-1];
                 tempMod.ReSet();
                 tempMod.action = unityAction;
                 tempMod.DelayTime = delay;
