@@ -11,7 +11,7 @@ namespace YuoTools
 
         public void PlayTextUpAndFade(Text text, float upDis, float overTime) => YuoStartCoroutine(TextUpAndFade(text, upDis, overTime));
 
-        public void PlayMoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, Speed, EndAction, delayTime));
+        public void PlayMoveTo(Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, needTime, EndAction, delayTime));
         public void RectMove(RectTransform rect,Vector2 dir,float needTime,float Distance,UnityAction EndAction = null) => StartCoroutine(IRectMove(rect,dir,needTime,Distance,EndAction));
         #region
         /// <summary>
@@ -19,18 +19,29 @@ namespace YuoTools
         /// </summary>
         /// <param name="tran"></param>
         /// <param name="end"></param>
-        /// <param name="Speed"></param>
+        /// <param name="needTime"></param>
         /// <param name="UpdateAction"></param>
         /// <param name="EndAction"></param>
         /// <returns></returns>
-        IEnumerator MoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0)
+        IEnumerator MoveTo(Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0)
         {
+            float moveSpeed =Vector3.Distance(end,tran.position) / needTime;
             yield return YuoWait.GetWait(delayTime);
             while (true)
             {
                 yield return null;
-                tran.position = Vector3.MoveTowards(tran.position, end, Speed);
-                if (Vector3.Distance(tran.position, end) < 0.001f)
+                if (tran == null)
+                {
+                    yield break;
+                }
+                if (Vector3.Distance(tran.position,end)<= moveSpeed*Time.deltaTime)
+                {
+                    tran.position = end;
+                    EndAction?.Invoke();
+                    yield break;
+                }
+                tran.position += (end - tran.position).normalized * moveSpeed * Time.deltaTime;
+                if (Vector3.Distance(tran.position, end) < 0.01f)
                 {
                     EndAction?.Invoke();
                     yield break;
@@ -82,6 +93,15 @@ namespace YuoTools
             }
         }
         #endregion
+
+    }
+    public static class TweenEx
+    {
+        public static Transform MoveTo(this Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0)
+        {
+            YuoTweenCon.Instance.PlayMoveTo(tran, end, needTime, EndAction, delayTime);
+            return tran;
+        }
 
     }
 }
