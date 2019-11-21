@@ -70,5 +70,25 @@ namespace YuoTools
             return path;
 
         }
+        /// <summary>
+        ///复制内容到剪切板
+        /// </summary>
+        /// <param name="input"></param>
+        public static void CopyToClipboard(string input)
+        {
+#if UNITY_EDITOR
+            TextEditor t = new TextEditor();
+            t.text = input;
+            t.OnFocus();
+            t.Copy();
+#elif UNITY_IPHONE
+        CopyTextToClipboard_iOS(input);  
+#elif UNITY_ANDROID
+        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        AndroidJavaClass tool = new AndroidJavaClass("com.my.ugcf.Tool");
+        tool.CallStatic("CopyTextToClipboard", currentActivity, input);
+#endif
+        }
     }
 }

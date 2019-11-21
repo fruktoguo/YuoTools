@@ -12,8 +12,12 @@ namespace YuoTools
         public void PlayTextUpAndFade(Text text, float upDis, float overTime) => YuoStartCoroutine(TextUpAndFade(text, upDis, overTime));
 
         public void PlayMoveTo(Transform tran, Vector3 end, float Speed, UnityAction EndAction = null, float delayTime = 0) => StartCoroutine(MoveTo(tran, end, Speed, EndAction, delayTime));
-        public void RectMove(RectTransform rect,Vector2 dir,float needTime,float Distance,UnityAction EndAction = null) => StartCoroutine(IRectMove(rect,dir,needTime,Distance,EndAction));
-        #region
+        public YuoTweenModForRect RectMove(RectTransform rect, Vector2 dir, float needTime, float Distance, YuoTweenModForRect mod)
+        {
+            StartCoroutine(IRectMove(rect, dir, needTime, Distance, mod));
+            return mod;
+        }
+        #region IEnumerator
         /// <summary>
         /// 移动到目标位置
         /// </summary>
@@ -66,22 +70,44 @@ namespace YuoTools
             }
         }
 
-        public IEnumerator IRectMove(RectTransform rect,Vector2 dir,float needTime,float Distance ,UnityAction EndAction = null)
+        public IEnumerator IRectMove(RectTransform rect, Vector2 dir, float needTime, float Distance, YuoTweenModForRect mod)
         {
             float timer = needTime;
             while (true)
             {
                 yield return null;
                 timer -= Time.deltaTime;
-                rect.anchoredPosition += dir.normalized / needTime* Distance * Time.deltaTime;
+                rect.anchoredPosition += dir.normalized / needTime * Distance * Time.deltaTime;
                 if (timer <= 0)
                 {
-                    EndAction?.Invoke();
-                    yield break;
+                    if (mod.Upend)
+                    {
+                        timer = needTime;
+                        mod.Upend = false;
+                        dir *= -1;
+                    }
+                    else
+                    {
+                        mod.EndAction?.Invoke();
+                        yield break;
+                    }
                 }
             }
         }
         #endregion
 
+        public class YuoTweenMod
+        {
+            public UnityAction EndAction;
+        }
+        public class YuoTweenModForRect : YuoTweenMod
+        {
+            public bool Upend;
+            public YuoTweenModForRect SetUpend()
+            {
+                Upend = true;
+                return this;
+            }
+        }
     }
 }
