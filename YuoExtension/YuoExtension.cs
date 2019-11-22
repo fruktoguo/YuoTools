@@ -58,10 +58,9 @@ namespace YuoTools
             return tran;
         }
 
-        public static YuoTweenCon.YuoTweenModForRect RectMove(this RectTransform rect, Vector2 dir, float needTime, float Distance)
+        public static void RectMove(this RectTransform rect, Vector2 dir, float needTime, float Distance)
         {
-            YuoTweenCon.YuoTweenModForRect mod = new YuoTweenCon.YuoTweenModForRect();
-            return YuoTweenCon.Instance.RectMove(rect, dir, needTime, Distance, mod);
+            YuoTweenCon.Instance.RectMove(rect, dir, needTime, Distance);
         }
 
         #region Position
