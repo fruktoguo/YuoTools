@@ -164,9 +164,10 @@ namespace YuoTools
             End = false;
             action = null;
         }
-        public void SetName(string name)
+        public YuoDelayMod SetName(string name)
         {
             Name = name;
+            return this;
         }
     }
     public static class Delay
