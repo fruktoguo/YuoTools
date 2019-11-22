@@ -9,7 +9,7 @@ namespace YuoTools
         #region Text
         public static void PlayTextUpAndFade(this Text text, float upDis, float overTime)
         {
-            YuoTweenCon.Instance.PlayTextUpAndFade(text, upDis, overTime);
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.TextUpAndFade(text, upDis, overTime));
         }
         public static void UpdateText(this Text text, string str)
         {
@@ -60,7 +60,7 @@ namespace YuoTools
 
         public static void RectMove(this RectTransform rect, Vector2 dir, float needTime, float Distance)
         {
-            YuoTweenCon.Instance.RectMove(rect, dir, needTime, Distance);
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IRectMove(rect, dir, needTime, Distance));
         }
 
         #region Position
