@@ -6,28 +6,28 @@ namespace YuoTools
 {
     public class SaveGObjSate : Singleton<SaveGObjSate>
     {
-        public Dictionary<Transform, Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>> datas
-            = new Dictionary<Transform, Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>>();
-        Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)> dataTemp
-            = new Dictionary<Transform, (bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image Image)>();
+        public Dictionary<Transform, Dictionary<Transform, DataOfSave>> datas
+            = new Dictionary<Transform, Dictionary<Transform, DataOfSave>>();
         Color colorTemp = new Color(0, 0, 0, 0);
         public void Save(Transform tran)
         {
             Transform[] transforms = tran.GetComponentsInChildren<Transform>();
             Image[] colors = tran.GetComponentsInChildren<Image>();
-            dataTemp.Clear();
+            Dictionary<Transform, DataOfSave> dataTemp
+            = new Dictionary<Transform, DataOfSave>();
             foreach (var item in transforms)
             {
                 if (tran != item)
                 {
-                    dataTemp.Add(item, (item.gameObject.activeSelf, item.position, item.rotation, item.localScale, Color.white, null));
+                    dataTemp.Add(item,new DataOfSave(item.gameObject.activeSelf, item.position, item.rotation, item.localScale, Color.white, null));
                 }
             }
             foreach (var item in colors)
             {
                 if (dataTemp.ContainsKey(item.transform))
                 {
-                    dataTemp[item.transform] = (dataTemp[item.transform].active, dataTemp[item.transform].pos, dataTemp[item.transform].rot, dataTemp[item.transform].scale, item.color, item);
+                    dataTemp[item.transform].color = item.color;
+                    dataTemp[item.transform].Image = item;
                 }
             }
             if (!datas.ContainsKey(tran))
@@ -43,8 +43,7 @@ namespace YuoTools
         {
             if (!datas.ContainsKey(tran))
                 return;
-            dataTemp = datas[tran];
-            foreach (var item in dataTemp)
+            foreach (var item in datas[tran])
             {
                 if (item.Key != null)
                 {
@@ -57,6 +56,26 @@ namespace YuoTools
                         item.Value.Image.color = item.Value.color;
                     }
                 }
+            }
+        }
+
+        public class DataOfSave
+        {
+            public bool active;
+            public Vector3 pos;
+            public Quaternion rot;
+            public Vector3 scale;
+            public Color color;
+            public Image Image;
+
+            public DataOfSave(bool active, Vector3 pos, Quaternion rot, Vector3 scale, Color color, Image image)
+            {
+                this.active = active;
+                this.pos = pos;
+                this.rot = rot;
+                this.scale = scale;
+                this.color = color;
+                Image = image;
             }
         }
     }

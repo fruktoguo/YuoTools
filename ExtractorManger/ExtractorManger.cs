@@ -16,6 +16,7 @@ namespace YuoTools
             if (!extractors.ContainsKey(extractorName))
             {
                 Extractor<T> ex = new Extractor<T>();
+                ex.Name = extractorName;
                 extractors.Add(extractorName, ex);
                 $"创建抽取器 [{extractorName.LogSetColor(YuoColor.番茄)}] 成功".Log();
             }
@@ -56,6 +57,7 @@ namespace YuoTools
 
     public class Extractor<T>
     {
+        public string Name;
         List<RanMod<T>> RM = new List<RanMod<T>>();
         List<RanMod<T>> RMBackup = new List<RanMod<T>>();
         /// <summary> 
@@ -83,6 +85,12 @@ namespace YuoTools
                     RM[i].RandomNum++;
                     return RM[i];
                 }
+            }
+            $"{Name}抽取器已经空了".Log();
+            if (RM.Count!=0)
+            {
+                ReSet();
+                return GetItem(newProp);
             }
             return null;
         }

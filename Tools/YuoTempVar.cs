@@ -5,18 +5,20 @@ using System.Collections;
 using System;
 namespace YuoTools
 {
-    public static class YuoTempVar
+    public static class Temp
     {
-        public static bool boolTemp;
-        public static int intTemp;
-        public static float floatTemp;
-        public static string strTemp;
-        public static Vector3 v3Temp;
-        public static Vector2Int v2IntTemp;
-        public static Vector3Int v3IntTemp;
-        public static Color colorTemp;
-        public static Text textTemp;
-        public static Transform tranTemp;
-        public static GameObject goTemp;
+        public static bool Bool;
+        public static int Int;
+        public static float Float;
+        public static string Str;
+        public static Vector3 V3;
+        public static Vector2 V2;
+        public static Vector2Int V2Int;
+        public static Vector3Int V3Int;
+        public static Color color;
+        public static Text text;
+        public static Transform tran;
+        public static GameObject go;
+        public static Dictionary<int, int> a;
     }
 }

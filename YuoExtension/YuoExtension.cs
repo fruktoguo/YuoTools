@@ -9,7 +9,7 @@ namespace YuoTools
         #region Text
         public static void PlayTextUpAndFade(this Text text, float upDis, float overTime)
         {
-            YuoTweenCon.Instance.PlayTextUpAndFade(text, upDis, overTime);
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.TextUpAndFade(text, upDis, overTime));
         }
         public static void UpdateText(this Text text, string str)
         {
@@ -57,41 +57,47 @@ namespace YuoTools
             tran.gameObject.SetActive(false);
             return tran;
         }
+
+        public static void RectMove(this RectTransform rect, Vector2 dir, float needTime, float Distance)
+        {
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IRectMove(rect, dir, needTime, Distance));
+        }
+
         #region Position
         public static Vector3 SetPosX(this Transform tran, float PosX)
         {
-            YuoTempVar.v3Temp.Set(PosX, tran.position.y, tran.position.z);
-            tran.position = YuoTempVar.v3Temp;
+            Temp.V3.Set(PosX, tran.position.y, tran.position.z);
+            tran.position = Temp.V3;
             return tran.position;
         }
         public static Vector3 SetPosY(this Transform tran, float PosY)
         {
-            YuoTempVar.v3Temp.Set(tran.position.x, PosY, tran.position.z);
-            tran.position = YuoTempVar.v3Temp;
+            Temp.V3.Set(tran.position.x, PosY, tran.position.z);
+            tran.position = Temp.V3;
             return tran.position;
         }
         public static Vector3 SetPosZ(this Transform tran, float PosZ)
         {
-            YuoTempVar.v3Temp.Set(tran.position.x, tran.position.y, PosZ);
-            tran.position = YuoTempVar.v3Temp;
+            Temp.V3.Set(tran.position.x, tran.position.y, PosZ);
+            tran.position = Temp.V3;
             return tran.position;
         }
         public static Vector3 SetLocalPosX(this Transform tran, float PosX)
         {
-            YuoTempVar.v3Temp.Set(PosX, tran.localPosition.y, tran.localPosition.z);
-            tran.localPosition = YuoTempVar.v3Temp;
+            Temp.V3.Set(PosX, tran.localPosition.y, tran.localPosition.z);
+            tran.localPosition = Temp.V3;
             return tran.localPosition;
         }
         public static Vector3 SetLocalPosY(this Transform tran, float PosY)
         {
-            YuoTempVar.v3Temp.Set(tran.localPosition.x, PosY, tran.localPosition.z);
-            tran.localPosition = YuoTempVar.v3Temp;
+            Temp.V3.Set(tran.localPosition.x, PosY, tran.localPosition.z);
+            tran.localPosition = Temp.V3;
             return tran.localPosition;
         }
         public static Vector3 SetLocalPosZ(this Transform tran, float PosZ)
         {
-            YuoTempVar.v3Temp.Set(tran.localPosition.x, tran.localPosition.y,PosZ);
-            tran.localPosition = YuoTempVar.v3Temp;
+            Temp.V3.Set(tran.localPosition.x, tran.localPosition.y,PosZ);
+            tran.localPosition = Temp.V3;
             return tran.localPosition;
         }
         public static bool InRange(this Vector2Int pos, Vector2Int zero, int MaxWidth, int MinWidth, int MaxHeight, int MinHeight)
@@ -123,6 +129,13 @@ namespace YuoTools
         public static GameObject Hide(this GameObject gameObject)
         {
             gameObject.SetActive(false);
+            return gameObject;
+        }
+
+        public static GameObject ReShow(this GameObject gameObject)
+        {
+            gameObject.Hide();
+            gameObject.Show();
             return gameObject;
         }
         #endregion
@@ -187,21 +200,6 @@ namespace YuoTools
         public static bool InRange(this int i,int min,int max)
         {
             return i >= min && i <= max;
-        }
-        #endregion
-
-        #region 延迟
-        public static YuoDelayMod YuoDelay<T>(this T obj, UnityAction action, float delay)
-        {
-            return YuoDelayCon.Instance.Invoke(action, delay);
-        }
-        public static YuoDelayMod YuoDelayRealtime<T>(this T obj, UnityAction action, float delay)
-        {
-            return YuoDelayCon.Instance.InvokeRealtime(action, delay);
-        }
-        public static void YuoStop<T>(this T obj, YuoDelayMod yuoInvokeMod)
-        {
-            YuoDelayCon.Instance.StopCor(yuoInvokeMod);
         }
         #endregion
     }

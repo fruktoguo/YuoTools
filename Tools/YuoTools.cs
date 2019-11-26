@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace YuoTools
 {
-    public static class YuoTools
+    public static class YuoTool
     {
         /// <summary>
         /// 根据T值，计算贝塞尔曲线上面相对应的点
         /// </summary>
         /// <param name="t"></param>T值
-        /// <param name="p0"></param>起始点
-        /// <param name="p1"></param>控制点
-        /// <param name="p2"></param>目标点
+        /// <param name="start"></param>起始点
+        /// <param name="con"></param>控制点
+        /// <param name="end"></param>目标点
         /// <returns></returns>根据T值计算出来的贝赛尔曲线点
-        private static Vector3 CalculateCubicBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
+        public static Vector3 CalculateCubicBezierPoint(float t, Vector3 start, Vector3 con, Vector3 end)
         {
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
 
-            Vector3 p = uu * p0;
-            p += 2 * u * t * p1;
-            p += tt * p2;
+            Vector3 p = uu * start;
+            p += 2 * u * t * con;
+            p += tt * end;
 
             return p;
         }
@@ -69,6 +69,26 @@ namespace YuoTools
             }
             return path;
 
+        }
+        /// <summary>
+        ///复制内容到剪切板
+        /// </summary>
+        /// <param name="input"></param>
+        public static void CopyToClipboard(string input)
+        {
+#if UNITY_EDITOR
+            TextEditor t = new TextEditor();
+            t.text = input;
+            t.OnFocus();
+            t.Copy();
+#elif UNITY_IPHONE
+        CopyTextToClipboard_iOS(input);  
+#elif UNITY_ANDROID
+        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        AndroidJavaClass tool = new AndroidJavaClass("com.my.ugcf.Tool");
+        tool.CallStatic("CopyTextToClipboard", currentActivity, input);
+#endif
         }
     }
 }
