@@ -63,6 +63,19 @@ namespace YuoTools
             YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IRectMove(rect, dir, needTime, Distance));
         }
 
+        public static void SetPos(this Transform tran,float x,float y,float z)
+        {
+            Temp.V3.Set(x, y, z);
+            tran.position = Temp.V3;
+        }
+
+        public static Vector3 SetPos(this ref Vector3 v3,float x,float y,float z)
+        {
+            Temp.V3.Set(x, y, z);
+            v3 = Temp.V3;
+            return v3;
+        }
+
         #region Position
         public static Vector3 SetPosX(this Transform tran, float PosX)
         {

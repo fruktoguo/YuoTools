@@ -42,12 +42,12 @@ namespace YuoTools
             }
         }        
         /// <summary>
-        /// 移动到目标位置
+        /// 移动到目标点(曲线)
         /// </summary>
         /// <param name="tran"></param>
         /// <param name="end"></param>
         /// <param name="needTime"></param>
-        /// <param name="UpdateAction"></param>
+        /// <param name="con"></param>
         /// <param name="EndAction"></param>
         /// <returns></returns>
         public IEnumerator MoveToCurue(Transform tran, Vector3 end, float needTime, Vector3 con ,UnityAction EndAction = null)
@@ -55,12 +55,6 @@ namespace YuoTools
             float moveSpeed =1 / needTime ;
             needTime = 0;
             Vector3 start = tran.position;
-            Temp.V3 = start + end;
-            Temp.V3 /= 2;
-            Temp.V3.x *= 1+ con.x;
-            Temp.V3.y *= 1+ con.y;
-            Temp.V3.z *= 1+ con.z;
-            con = Temp.V3;
             while (true)
             {
                 yield return null;
@@ -68,7 +62,7 @@ namespace YuoTools
                 {
                     yield break;
                 }
-                if (needTime>=1)
+                if (needTime >= 1)
                 {
                     tran.position = end;
                     EndAction?.Invoke();
@@ -121,19 +115,94 @@ namespace YuoTools
                 }
             }
         }
+        public IEnumerator IFloatTo(float start,float end,float needTime,FloatTo action,UnityAction EndAction = null)
+        {
+            float speed = (end - start) / needTime;
+            float timer = needTime;
+            while (true)
+            {
+                yield return null;
+                timer -= Time.deltaTime;
+                action?.Invoke(end - timer * speed);
+                if (timer <= 0)
+                {
+                    action?.Invoke(end);
+                    EndAction?.Invoke();
+                    yield break;
+                }
+            }
+        }
+        public IEnumerator IV3To(Vector3 start,Vector3 end,float needTime,V3To action,UnityAction EndAction = null)
+        {
+            Vector3 speed = (end - start) / needTime;
+            float timer = needTime;
+            while (true)
+            {
+                yield return null;
+                timer -= Time.deltaTime;
+                action?.Invoke(end - timer * speed);
+                if (timer <= 0)
+                {
+                    action?.Invoke(end);
+                    EndAction?.Invoke();
+                    yield break;
+                }
+            }
+        }
+        public delegate void FloatTo(float value);
+        public delegate void V3To(Vector3 value);
     }
+
     public static class TweenEx
     {
+        /// <summary>
+        /// 移动到目标点
+        /// </summary>
+        /// <param name="tran"></param>
+        /// <param name="end"></param>
+        /// <param name="needTime"></param>
+        /// <param name="EndAction"></param>
+        /// <param name="delayTime"></param>
+        /// <returns></returns>
         public static Transform MoveTo(this Transform tran, Vector3 end, float needTime, UnityAction EndAction = null, float delayTime = 0)
         {
             YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.MoveTo(tran, end, needTime, EndAction, delayTime));
             return tran;
         }
+        /// <summary>
+        /// 移动到目标点(曲线)
+        /// </summary>
+        /// <param name="tran"></param>
+        /// <param name="end"></param>
+        /// <param name="needTime"></param>
+        /// <param name="con"></param>
+        /// <param name="EndAction"></param>
+        /// <returns></returns>
         public static Transform MoveToCurue(this Transform tran, Vector3 end, float needTime, Vector3 con, UnityAction EndAction = null)
         {
             YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.MoveToCurue(tran, end, needTime, con, EndAction));
             return tran;
         }
-
+        public static Transform MoveToCurue2D(this Transform tran, Vector2 end, float needTime, (float x, float y) con, UnityAction EndAction = null)
+        {
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.MoveToCurue(tran, end, needTime, GetConPostion(tran.position, end, con.y, con.x), EndAction));
+            return tran;
+        }
+        public static Vector2 GetConPostion(Vector2 start, Vector2 end, float x, float y)
+        {
+            Temp.V2 = (end + start) / 2;
+            Temp.V2 *= y;
+            Temp.V2.Set(Temp.V2.x + start.y - end.y, Temp.V2.y + end.x - start.x);
+            Temp.V2 = (Temp.V2 - ((end + start) / 2 * y)) * x + (start + (end - start) * y);
+            return Temp.V2;
+        }
+        public static void To(this ref float f,float value,float needTime, YuoTweenCon.FloatTo floatTo, UnityAction action = null)
+        {
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IFloatTo(f, value, needTime, floatTo, action));
+        }
+        public static void To(this ref Vector3 f,Vector3 value,float needTime, YuoTweenCon.V3To floatTo, UnityAction action = null)
+        {
+            YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IV3To(f, value, needTime, floatTo, action));
+        }
     }
 }
