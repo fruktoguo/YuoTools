@@ -1,9 +1,9 @@
 # YuoTools
 # 日常用的和总结的一些东西
-# 1-简单的ECS框架
-## System继承YuoSystem<T>,并且实现Run方法,然后System继承对应的接口,比如IAwake会在创建对应组件时调用,IDestroy会在销毁时调用,IUiCreate会在UI窗口被创建时调用
-## Component继承YuoComponent,组件可以添加YuoSave特性进行自动保存数据,具体实现见SaveManager
-## UI通过检查器右键YuoUi/添加UI创建,默认带了dotween用作窗口动画,点击UI上的UISetting的生成UI代码,会自动创建对应的组件和系统脚本,当前UI中前缀为C_的为自动生成代码的检测物体
+# 简单的ECS框架
+	System继承YuoSystem<T>,并且实现Run方法,然后System继承对应的接口,比如IAwake会在创建对应组件时调用,IDestroy会在销毁时调用,IUiCreate会在UI窗口被创建时调用
+	Component继承YuoComponent,组件可以添加YuoSave特性进行自动保存数据,具体实现见SaveManager
+	UI通过检查器右键YuoUi/添加UI创建,默认带了dotween用作窗口动画,点击UI上的UISetting的生成UI代码,会自动创建对应的组件和系统脚本,当前UI中前缀为C_的为自动生成代码的检测物体
 ## 扩展方法:
 ###  	Log:可以在任何类型后面.Log直接输出
 ### 	Mathf:
