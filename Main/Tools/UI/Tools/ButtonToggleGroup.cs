@@ -17,7 +17,7 @@ public class ButtonToggleGroup : MonoBehaviour
     public int showIndex;
     public bool Horizontal = true;
 
-    [Header("焦点大小占比")]
+    [Header("?????С???")]
     [Range(0, 1)]
     public float Size = 0.7f;
 

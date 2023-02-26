@@ -41,7 +41,7 @@ namespace YuoTools
 
             if (!Directory.Exists(folderPath)) return false;
 
-            //ÓÃÀ´ÏŞ¶¨Õâ¸ö½Å±¾Ö»ÄÜÔÚScriptÎÄ¼şÏÂ´´½¨
+            //ç”¨æ¥é™å®šè¿™ä¸ªè„šæœ¬åªèƒ½åœ¨Scriptæ–‡ä»¶ä¸‹åˆ›å»º
             return folderPath.Contains("Script");
         }
     }

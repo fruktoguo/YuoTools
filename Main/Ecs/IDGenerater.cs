@@ -2,17 +2,17 @@ using YuoTools.Main.Ecs;
 
 namespace YuoTools.ECS
 {
-    public class IDGenerater : YuoComponent
+    public class IDGenerate : YuoComponent
     {
-        private static IDGenerater _instance;
+        private static IDGenerate _instance;
 
-        public static IDGenerater Instance
+        public static IDGenerate Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new IDGenerater();
+                    _instance = new IDGenerate();
                 }
 
                 return _instance;
@@ -35,7 +35,7 @@ namespace YuoTools.ECS
             }
         }
         
-        public static long GetID(Main.Ecs.YuoEntity entity)
+        public static long GetID(YuoEntity entity)
         {
             return entity.GetHashCode();
         }
@@ -50,9 +50,9 @@ namespace YuoTools.ECS
         }
     }
 
-    public class IDGeneraterSystem : YuoSystem<IDGenerater>, IAwake
+    public class IDGenerateSystem : YuoSystem<IDGenerate>, IAwake
     {
-        protected override void Run(IDGenerater component)
+        protected override void Run(IDGenerate component)
         {
             component.Init();
         }

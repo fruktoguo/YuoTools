@@ -13,15 +13,15 @@ namespace YuoTools
         private UnityAction<Animator, AnimatorStateInfo, int> onStateUpdate;
 
         public void Init(
-            UnityAction<Animator, AnimatorStateInfo, int> onStateEnter,
-            UnityAction<Animator, AnimatorStateInfo, int> onStateExit,
-            UnityAction<Animator, AnimatorStateInfo, int> onStateMove,
-            UnityAction<Animator, AnimatorStateInfo, int> onStateUpdate)
+            UnityAction<Animator, AnimatorStateInfo, int> onEnter,
+            UnityAction<Animator, AnimatorStateInfo, int> onExit,
+            UnityAction<Animator, AnimatorStateInfo, int> onMove,
+            UnityAction<Animator, AnimatorStateInfo, int> onUpdate)
         {
-            this.onStateEnter = onStateEnter;
-            this.onStateExit = onStateExit;
-            this.onStateMove = onStateMove;
-            this.onStateUpdate = onStateUpdate;
+            onStateEnter = onEnter;
+            onStateExit = onExit;
+            onStateMove = onMove;
+            onStateUpdate = onUpdate;
         }
         public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace YuoTools
 {
@@ -31,13 +33,49 @@ namespace YuoTools
             return color;
         }
 
-        public static Color SetAlpha(this ref Color color, float a)
+        public static Color SetR(this ref Color color, float r)
+        {
+            color.r = r;
+            return color;
+        }
+
+        public static Color SetG(this ref Color color, float g)
+        {
+            color.g = g;
+            return color;
+        }
+
+        public static Color SetB(this ref Color color, float b)
+        {
+            color.b = b;
+            return color;
+        }
+
+        public static Color RSetR(this Color color, float r)
+        {
+            color.r = r;
+            return color;
+        }
+
+        public static Color RSetG(this Color color, float g)
+        {
+            color.g = g;
+            return color;
+        }
+
+        public static Color RSetB(this Color color, float b)
+        {
+            color.b = b;
+            return color;
+        }
+
+        public static Color RSetA(this Color color, float a)
         {
             color.a = a;
             return color;
         }
 
-        public static Color SetA(this Color color, float a)
+        public static Color SetAlpha(this ref Color color, float a)
         {
             color.a = a;
             return color;
@@ -49,9 +87,105 @@ namespace YuoTools
             return sprite.color;
         }
 
+        public static void SetColorR(this Image image, float r)
+        {
+            image.color = image.color.RSetR(r);
+        }
+
+        public static void SetColorG(this Image image, float g)
+        {
+            image.color = image.color.RSetG(g);
+        }
+
+        public static void SetColorB(this Image image, float b)
+        {
+            image.color = image.color.RSetB(b);
+        }
+
+        public static void SetColorA(this Image image, float a)
+        {
+            image.color = image.color.RSetA(a);
+        }
+
+        public static void SetColorR(this SpriteRenderer renderer, float r)
+        {
+            renderer.color = renderer.color.RSetR(r);
+        }
+
+        public static void SetColorG(this SpriteRenderer renderer, float g)
+        {
+            renderer.color = renderer.color.RSetG(g);
+        }
+
+        public static void SetColorB(this SpriteRenderer renderer, float b)
+        {
+            renderer.color = renderer.color.RSetB(b);
+        }
+
+        public static void SetColorA(this SpriteRenderer renderer, float a)
+        {
+            renderer.color = renderer.color.RSetA(a);
+        }
+
+        public static void SetColorR(this Text text, float r)
+        {
+            text.color = text.color.RSetR(r);
+        }
+
+        public static void SetColorG(this Text text, float g)
+        {
+            text.color = text.color.RSetG(g);
+        }
+
+        public static void SetColorB(this Text text, float b)
+        {
+            text.color = text.color.RSetB(b);
+        }
+
+        public static void SetColorA(this Text text, float a)
+        {
+            text.color = text.color.RSetA(a);
+        }
+
+        public static void SetColorR(this TextMeshProUGUI text, float r)
+        {
+            text.color = text.color.RSetR(r);
+        }
+
+        public static void SetColorG(this TextMeshProUGUI text, float g)
+        {
+            text.color = text.color.RSetG(g);
+        }
+
+        public static void SetColorB(this TextMeshProUGUI text, float b)
+        {
+            text.color = text.color.RSetB(b);
+        }
+
+        public static void SetColorA(this TextMeshProUGUI text, float a)
+        {
+            text.color = text.color.RSetA(a);
+        }
+
         #endregion Color
 
         #region Transform
+
+        public static T GetOrAddComponent<T>(this Transform transform) where T : Component
+        {
+            T component = transform.GetComponent<T>();
+            if (component == null)
+            {
+                component = transform.gameObject.AddComponent<T>();
+            }
+
+            return component;
+        }
+
+        public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+        {
+            return GetOrAddComponent<T>(gameObject.transform);
+        }
 
         public static void ResetTrans(this Transform tran)
         {
@@ -79,6 +213,107 @@ namespace YuoTools
             return tran;
         }
 
+        public static Vector2 GetSquarePointByAngle_Round(this Rect rect, float angle)
+        {
+            angle = angle.Residual(360);
+            float x = rect.width / 2;
+            float y = rect.height / 2;
+            float widthRatio = x > y ? 1 : x / y;
+            float heightRatio = y > x ? 1 : y / x;
+
+            float radius = x > y ? x : y;
+            //总共有八个区域
+            if (angle is >= 0 and < 45)
+            {
+                y = radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                y *= heightRatio;
+            }
+            else if (angle is >= 45 and < 90)
+            {
+                angle = 90 - angle;
+                x = radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                x *= widthRatio;
+            }
+            else if (angle is >= 90 and < 135)
+            {
+                angle = angle - 90;
+                x = -radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                x *= widthRatio;
+            }
+            else if (angle is >= 135 and < 180)
+            {
+                angle = (180 - angle);
+                y = radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                x = -x;
+                y *= heightRatio;
+            }
+            else if (angle is >= 180 and < 225)
+            {
+                angle = angle - 180;
+                y = -radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                x = -x;
+                y *= heightRatio;
+            }
+            else if (angle is >= 225 and < 270)
+            {
+                angle = 270 - angle;
+                x = -radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                y = -y;
+                x *= widthRatio;
+            }
+            else if (angle is >= 270 and < 315)
+            {
+                angle = angle - 270;
+                x = radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                y = -y;
+                x *= widthRatio;
+            }
+            else if (angle is >= 315 and < 360)
+            {
+                angle = 360 - angle;
+                y = -radius * Mathf.Tan(angle * Mathf.Deg2Rad);
+                y *= heightRatio;
+            }
+
+
+            return new Vector2(x, y);
+        }
+
+        public static Vector2 GetSquarePointByAngle_Uniform(this Rect rect, float ratio)
+        {
+            ratio = ratio.Residual(1);
+
+            float allLength = rect.width * 2 + rect.height * 2;
+            float widthRatio = rect.width / allLength;
+            float heightRatio = rect.height / allLength;
+
+            float x = rect.width / 2;
+            float y = rect.height / 2;
+
+            if (ratio < widthRatio)
+            {
+                x = (ratio - widthRatio / 2) / widthRatio * rect.width;
+            }
+            else if (ratio < widthRatio + heightRatio)
+            {
+                y = (-ratio + widthRatio + heightRatio / 2) / heightRatio * rect.height;
+            }
+            else if (ratio < widthRatio * 2 + heightRatio)
+            {
+                x = (-ratio + widthRatio * 1.5f + heightRatio) / widthRatio * rect.width;
+                y = -y;
+            }
+            else
+            {
+                y = (ratio - widthRatio * 2 - heightRatio * 1.5f) / heightRatio * rect.height;
+                x = -x;
+            }
+
+            Temp.V2.Set(x, y);
+            return Temp.V2;
+        }
+
+
         public static void SetPos(this RectTransform tran, float x, float y)
         {
             Temp.V2.Set(x, y);
@@ -89,6 +324,21 @@ namespace YuoTools
         {
             Temp.V3.Set(x, y, z);
             tran.position = Temp.V3;
+        }
+
+        public static Vector3 RSet(this Vector3 pos, float x, float y, float z)
+        {
+            pos.x = x;
+            pos.y = y;
+            pos.z = z;
+            return pos;
+        }
+
+        public static Vector2 RSet(this Vector2 pos, float x, float y)
+        {
+            pos.x = x;
+            pos.y = y;
+            return pos;
         }
 
         public static Vector3 SetX(this ref Vector3 v3, float x)
@@ -112,32 +362,32 @@ namespace YuoTools
             return v3;
         }
 
-        public static Vector2 SetX(this ref Vector2 V2, float x)
+        public static Vector2 SetX(this ref Vector2 v2, float x)
         {
-            Temp.V2.Set(x, V2.y);
-            V2 = Temp.V2;
-            return V2;
+            Temp.V2.Set(x, v2.y);
+            v2 = Temp.V2;
+            return v2;
         }
 
-        public static Vector2 SetY(this ref Vector2 V2, float y)
+        public static Vector2 SetY(this ref Vector2 v2, float y)
         {
-            Temp.V2.Set(V2.x, y);
-            V2 = Temp.V2;
-            return V2;
+            Temp.V2.Set(v2.x, y);
+            v2 = Temp.V2;
+            return v2;
         }
 
-        public static Vector2 RSetX(this Vector2 V2, float x)
+        public static Vector2 RSetX(this Vector2 v2, float x)
         {
-            Temp.V2.Set(x, V2.y);
-            V2 = Temp.V2;
-            return V2;
+            Temp.V2.Set(x, v2.y);
+            v2 = Temp.V2;
+            return v2;
         }
 
-        public static Vector2 RSetY(this Vector2 V2, float y)
+        public static Vector2 RSetY(this Vector2 v2, float y)
         {
-            Temp.V2.Set(V2.x, y);
-            V2 = Temp.V2;
-            return V2;
+            Temp.V2.Set(v2.x, y);
+            v2 = Temp.V2;
+            return v2;
         }
 
         public static Vector2 AddX(this ref Vector2 v2, float x)
@@ -222,6 +472,27 @@ namespace YuoTools
 
         #region RectTransform
 
+        public static void SetSize(this RectTransform rectTransform, float width, float height)
+        {
+            Temp.V2.Set(width, height);
+            rectTransform.sizeDelta = Temp.V2;
+        }
+
+        public static void SetSize(this RectTransform rectTransform, Vector2 size)
+        {
+            rectTransform.sizeDelta = size;
+        }
+
+        public static void SetSizeX(this RectTransform rectTransform, float size)
+        {
+            rectTransform.sizeDelta = rectTransform.sizeDelta.RSetX(size);
+        }
+
+        public static void SetSizeY(this RectTransform rectTransform, float size)
+        {
+            rectTransform.sizeDelta = rectTransform.sizeDelta.RSetY(size);
+        }
+
         public static void Copy(this RectTransform target, RectTransform from)
         {
             target.localScale = from.localScale;
@@ -297,20 +568,47 @@ namespace YuoTools
             target.sizeDelta = Vector2.zero;
         }
 
+        public static float GetWidth(this RectTransform target)
+        {
+            return LayoutUtility.GetPreferredWidth(target);
+        }
+
+        public static float GetHeight(this RectTransform target)
+        {
+            return LayoutUtility.GetPreferredHeight(target);
+        }
+
+        public static Vector2 GetSize(this RectTransform target)
+        {
+            return Temp.V2.RSet(target.GetWidth(), target.GetHeight());
+        }
+
+        public static Vector3 SetAnchoredPosX(this RectTransform tran, float posX)
+        {
+            tran.anchoredPosition = Temp.V2.RSet(posX, tran.anchoredPosition.y);
+            return tran.anchoredPosition;
+        }
+
+        public static Vector3 SetAnchoredPosY(this RectTransform tran, float posY)
+        {
+            tran.anchoredPosition = Temp.V2.RSet(tran.anchoredPosition.x, posY);
+            return tran.anchoredPosition;
+        }
+
         #endregion
 
         #region Position
 
-        public static Vector3 SetPosX(this Transform tran, float PosX)
+        public static Vector3 SetPosX(this Transform tran, float posX)
         {
-            Temp.V3.Set(PosX, tran.position.y, tran.position.z);
+            Temp.V3.Set(posX, tran.position.y, tran.position.z);
             tran.position = Temp.V3;
             return tran.position;
         }
 
-        public static Vector3 SetPosY(this Transform tran, float PosY)
+        public static Vector3 SetPosY(this Transform tran, float posY)
         {
-            Temp.V3.Set(tran.position.x, PosY, tran.position.z);
+            Temp.V3.Set(tran.position.x, posY, tran.position.z);
             tran.position = Temp.V3;
             return tran.position;
         }
@@ -339,6 +637,48 @@ namespace YuoTools
         public static Vector3 SetLocalPosZ(this Transform tran, float PosZ)
         {
             Temp.V3.Set(tran.localPosition.x, tran.localPosition.y, PosZ);
+            tran.localPosition = Temp.V3;
+            return tran.localPosition;
+        }
+
+        public static Vector3 AddPosX(this Transform tran, float posX)
+        {
+            Temp.V3.Set(tran.position.x + posX, tran.position.y, tran.position.z);
+            tran.position = Temp.V3;
+            return tran.position;
+        }
+
+        public static Vector3 AddPosY(this Transform tran, float posY)
+        {
+            Temp.V3.Set(tran.position.x, tran.position.y + posY, tran.position.z);
+            tran.position = Temp.V3;
+            return tran.position;
+        }
+
+        public static Vector3 AddPosZ(this Transform tran, float posZ)
+        {
+            Temp.V3.Set(tran.position.x, tran.position.y, tran.position.z + posZ);
+            tran.position = Temp.V3;
+            return tran.position;
+        }
+
+        public static Vector3 AddLocalPosX(this Transform tran, float posX)
+        {
+            Temp.V3.Set(tran.localPosition.x + posX, tran.localPosition.y, tran.localPosition.z);
+            tran.localPosition = Temp.V3;
+            return tran.localPosition;
+        }
+
+        public static Vector3 AddLocalPosY(this Transform tran, float posY)
+        {
+            Temp.V3.Set(tran.localPosition.x, tran.localPosition.y + posY, tran.localPosition.z);
+            tran.localPosition = Temp.V3;
+            return tran.localPosition;
+        }
+
+        public static Vector3 AddLocalPosZ(this Transform tran, float posZ)
+        {
+            Temp.V3.Set(tran.localPosition.x, tran.localPosition.y, tran.localPosition.z + posZ);
             tran.localPosition = Temp.V3;
             return tran.localPosition;
         }
@@ -388,6 +728,79 @@ namespace YuoTools
             return gameObject;
         }
 
+        public static T Hide<T>(this T gameObject) where T : Component
+        {
+            gameObject.gameObject.Hide();
+            return gameObject;
+        }
+
+        public static List<T> HideAll<T>(this List<T> list) where T : Component
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].gameObject.Hide();
+            }
+
+            return list;
+        }
+
+        public static List<GameObject> HideAll(this List<GameObject> list)
+        {
+            foreach (var item in list)
+            {
+                item.Hide();
+            }
+
+            return list;
+        }
+
+
+        public static T Show<T>(this T gameObject) where T : Component
+        {
+            gameObject.gameObject.Show();
+            return gameObject;
+        }
+
+        public static List<T> ShowAll<T>(this List<T> list) where T : Component
+        {
+            foreach (var item in list)
+            {
+                item.Show();
+            }
+
+            return list;
+        }
+
+        public static List<GameObject> ShowAll(this List<GameObject> list)
+        {
+            foreach (var item in list)
+            {
+                item.Show();
+            }
+
+            return list;
+        }
+
+        public static List<T> EnableAll<T>(this List<T> list) where T : Behaviour
+        {
+            foreach (var item in list)
+            {
+                item.enabled = true;
+            }
+
+            return list;
+        }
+
+        public static List<T> DisableAll<T>(this List<T> list) where T : Behaviour
+        {
+            foreach (var item in list)
+            {
+                item.enabled = false;
+            }
+
+            return list;
+        }
+
         public static GameObject ReShow(this GameObject gameObject)
         {
             if (!gameObject)
@@ -399,6 +812,17 @@ namespace YuoTools
             gameObject.SetActive(false);
             gameObject.SetActive(true);
             return gameObject;
+        }
+
+        public static List<Transform> GetChildren(this Transform transform)
+        {
+            List<Transform> list = new List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                list.Add(transform.GetChild(i));
+            }
+
+            return list;
         }
 
         #endregion GameObject
@@ -427,9 +851,21 @@ namespace YuoTools
 
         #region Enum
 
-        public static System.Array GetAll<T>(this T _enum) where T : System.Enum
+        // public static System.Array GetAll<T>(this T _enum) where T : System.Enum
+        // {
+        //     return System.Enum.GetValues(typeof(T));
+        // }
+
+        public static T[] GetAll<T>(this T @enum) where T : System.Enum
         {
-            return System.Enum.GetValues(typeof(T));
+            var array = System.Enum.GetValues(typeof(T));
+            T[] newArray = new T[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                newArray[i] = (T)array.GetValue(i);
+            }
+
+            return newArray;
         }
 
         #endregion Enum

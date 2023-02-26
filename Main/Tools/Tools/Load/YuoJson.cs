@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 
 namespace YuoTools
 {
-    public static class YuoJson
+    public static class YuoJsonHelper
     {
         private static string defPath;
 
@@ -55,9 +55,9 @@ namespace YuoTools
             {
                 localPath = $"{Application.streamingAssetsPath}/{DefPath}{path}";
             }
-            //找到当前路径
+            //??????·??
             FileInfo file = new FileInfo(localPath);
-            //判断有没有文件，有则打开文件，，没有创建后打开文件
+            //?ж?????????????????????????д?????????
             StreamWriter sw = file.CreateText();
             sw.WriteLine(JsonUtility.ToJson(data));
             sw.Close();

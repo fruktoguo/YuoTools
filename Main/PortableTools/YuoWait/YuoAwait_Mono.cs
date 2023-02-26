@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ET;
 using UnityEngine;
 using YuoTools;
 using YuoTools.ECS;
+using Object = UnityEngine.Object;
 
 namespace YuoTools
 {
@@ -32,11 +34,19 @@ namespace YuoTools
                 for (int i = 0; i < awaitPools.Actives.Count; i++)
                 {
                     var item = awaitPools.Actives[i];
-                    if (!item.unscaledTime)
+
+                    switch (item.timeType)
                     {
-                        if (Time.time < item.TargetTime) continue;
+                        case TimeType.Normal:
+                            if (Time.time < item.TargetTime) continue;
+                            break;
+                        case TimeType.Unscaled:
+                            if (Time.unscaledTime < item.TargetTime) continue;
+                            break;
+                        case TimeType.Frame:
+                            if (Time.frameCount < item.TargetFrame) continue;
+                            break;
                     }
-                    else if (Time.unscaledTime < item.TargetTime) continue;
 
                     item.tcs.SetResult();
                     removeList.Add(item);
@@ -57,6 +67,7 @@ namespace YuoTools
         public async ETTask WaitUnscaledTimeAsync(float waitTime)
         {
             AwaitItem item = awaitPools.GetItem();
+            item.timeType = TimeType.Unscaled;
             item.CreatTime = Time.unscaledTime;
             item.TargetTime = Time.unscaledTime + waitTime;
             await item.tcs;
@@ -65,8 +76,20 @@ namespace YuoTools
         public async ETTask WaitTimeAsync(float waitTime)
         {
             AwaitItem item = awaitPools.GetItem();
+            item.timeType = TimeType.Normal;
             item.CreatTime = Time.time;
+            waitTime.Clamp(0.00001f, float.MaxValue);
             item.TargetTime = Time.time + waitTime;
+            await item.tcs;
+        }
+
+        public async ETTask WaitFrameAsync(int waitTime)
+        {
+            AwaitItem item = awaitPools.GetItem();
+            item.timeType = TimeType.Frame;
+            item.CreatFrame = Time.frameCount;
+            waitTime.Clamp(1, int.MaxValue);
+            item.TargetFrame = Time.frameCount + waitTime;
             await item.tcs;
         }
 
@@ -101,12 +124,23 @@ namespace YuoTools
             /// </summary>
             public float TargetTime = 0;
 
-            public bool unscaledTime = false;
+            public int TargetFrame = 0;
+
+            public float CreatFrame = 0;
+
+            public TimeType timeType = TimeType.Normal;
 
             public AwaitItem()
             {
                 tcs = ETTask.Create(true);
             }
+        }
+
+        public enum TimeType
+        {
+            Normal = 0,
+            Unscaled = 1,
+            Frame = 2
         }
 
         private class AwaitPools : PoolsBase<AwaitItem>
@@ -122,10 +156,8 @@ namespace YuoTools
 
             public override void OnResetItem(AwaitItem item)
             {
-                item.unscaledTime = false;
+                item.timeType = TimeType.Normal;
                 item.tcs = ETTask.Create(true);
-                //item.taskSource = new TaskCompletionSource<bool>();
-                //item.taskSource.Recycle();
             }
         }
     }

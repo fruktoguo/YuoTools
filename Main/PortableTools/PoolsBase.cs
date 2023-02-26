@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 /*----------------------------------------------------------------------------
 --  对象池基类
@@ -14,9 +15,8 @@ namespace YuoTools
     {
         //public List<T> Actives { get; private set; } = new List<T>();
         public List<T> Actives = new List<T>();
-
-        private Queue<T> Pools = new Queue<T>();
-        private List<T> removeList = new List<T>();
+        [SerializeField] private Queue<T> Pools = new Queue<T>();
+        [SerializeField] private List<T> removeList = new List<T>();
 
         public void Remove(T item)
         {
@@ -27,6 +27,7 @@ namespace YuoTools
                     OnDestroyItem(item);
                 else
                     Pools.Enqueue(item);
+                OnRemoveItem(item);
             }
             else
             {
@@ -42,6 +43,7 @@ namespace YuoTools
                 {
                     Remove(item);
                 }
+
                 removeList.Clear();
             }
         }
@@ -51,7 +53,10 @@ namespace YuoTools
             removeList.Add(item);
         }
 
-        public int ActiveCount { get => Actives.Count; }
+        public int ActiveCount
+        {
+            get => Actives.Count;
+        }
 
         /// <summary>
         /// 池子最大数量，负数则为无限制
@@ -77,12 +82,14 @@ namespace YuoTools
             if (Pools.Count > 0)
             {
                 ItemTemp = Pools.Dequeue();
-                OnResetItem(ItemTemp);
             }
             else
             {
                 ItemTemp = CreatItem();
             }
+
+            OnResetItem(ItemTemp);
+
             Actives.Add(ItemTemp);
             return ItemTemp;
         }
@@ -98,6 +105,11 @@ namespace YuoTools
         /// </summary>
         /// <param name="item"></param>
         public abstract void OnResetItem(T item);
+
+        public virtual void OnRemoveItem(T item)
+        {
+            
+        }
 
         /// <summary>
         /// 超出最大池子容量时销毁

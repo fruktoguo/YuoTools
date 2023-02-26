@@ -228,10 +228,22 @@ namespace YuoTools
             };
         }
 
-        public static bool IsNumber(this string str)
+        public static bool IsInt(this string str)
         {
             return Regex.IsMatch(str, @"^[+-]?\d*$");
         }
+        
+        public static bool IsFloat(this string str)
+        {
+            return Regex.IsMatch(str, @"^[+-]?\d*[.]?\d*$");
+        }
+        
+        public static bool IsDouble(this string str)
+        {
+            return Regex.IsMatch(str, @"^[+-]?\d*[.]?\d*$");
+        }
+        
+        
 
         public static int SeedToInt(this string seed)
         {
@@ -270,6 +282,19 @@ namespace YuoTools
                 return null;
             }
             return result;
+        }
+        
+        public static bool IsNullOrSpace(this string str)
+        {
+            if (!string.IsNullOrEmpty(str))
+            {
+                for (int index = 0; index < str.Length; ++index)
+                {
+                    if (!char.IsWhiteSpace(str[index]))
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }

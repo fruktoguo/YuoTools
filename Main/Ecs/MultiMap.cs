@@ -6,37 +6,37 @@ namespace YuoTools.ECS
     /// <summary>
     /// dic嵌套list
     /// </summary>
-    /// <typeparam name="K"></typeparam>
-    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="TK"></typeparam>
+    /// <typeparam name="TV"></typeparam>
     [Serializable]
-    public class MultiMap<K, V> : Dictionary<K, List<V>>
+    public class MultiMap<TK, TV> : Dictionary<TK, List<TV>>
     {
-        private readonly List<V> _empty = new List<V>();
+        private readonly List<TV> _empty = new List<TV>();
 
-        public V[] Copy(K t)
+        public TV[] Copy(TK t)
         {
             TryGetValue(t, out var list);
-            return list == null ? Array.Empty<V>() : list.ToArray();
+            return list == null ? Array.Empty<TV>() : list.ToArray();
         }
 
-        public new List<V> this[K t] => TryGetValue(t, out var list) ? list : _empty;
+        public new List<TV> this[TK t] => TryGetValue(t, out var list) ? list : _empty;
 
-        public void AddItem(K t, V k)
+        public void AddItem(TK t, TV k)
         {
             if (!TryGetValue(t, out var list))
             {
-                list = new List<V>();
+                list = new List<TV>();
                 Add(t, list);
             }
 
             list.Add(k);
         }
 
-        public bool RemoveItem(K t, V k)
+        public bool RemoveItem(TK t, TV k)
         {
             if (!TryGetValue(t, out var list))
             {
-                Add(t, new List<V>());
+                Add(t, new List<TV>());
                 return false;
             }
 
@@ -49,9 +49,9 @@ namespace YuoTools.ECS
             return false;
         }
 
-        public List<V> GetAll()
+        public List<TV> GetAll()
         {
-            List<V> values = new();
+            List<TV> values = new();
             foreach (var item in this)
             {
                 values.AddRange(item.Value);
@@ -60,7 +60,7 @@ namespace YuoTools.ECS
             return values;
         }
 
-        public new bool Remove(K t)
+        public new bool Remove(TK t)
         {
             if (!ContainsKey(t))
             {

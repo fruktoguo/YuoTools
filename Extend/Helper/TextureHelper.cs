@@ -10,7 +10,7 @@ namespace YuoTools.Extend.Helper
     public static class TextureHelper
     {
         /// <summary>
-        ///     裁剪Texture2D
+        ///  裁剪Texture2D
         /// </summary>
         /// <param name="originalTexture"></param>
         /// <param name="offsetX"></param>
@@ -59,7 +59,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     缩放Textur2D
+        ///  缩放Texture2D
         /// </summary>
         /// <param name="source"></param>
         /// <param name="targetWidth"></param>
@@ -67,7 +67,7 @@ namespace YuoTools.Extend.Helper
         /// <returns></returns>
         public static Texture2D ScaleTexture(Texture2D source, float targetWidth, float targetHeight)
         {
-            var result = new Texture2D((int) targetWidth, (int) targetHeight, source.format, false);
+            var result = new Texture2D((int)targetWidth, (int)targetHeight, source.format, false);
 
             var incX = 1.0f / targetWidth;
             var incY = 1.0f / targetHeight;
@@ -75,8 +75,8 @@ namespace YuoTools.Extend.Helper
             for (var i = 0; i < result.height; ++i)
             for (var j = 0; j < result.width; ++j)
             {
-                var newColor = source.GetPixelBilinear(j / (float) result.width,
-                    i / (float) result.height);
+                var newColor = source.GetPixelBilinear(j / (float)result.width,
+                    i / (float)result.height);
                 result.SetPixel(j, i, newColor);
             }
 
@@ -85,7 +85,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     水平翻转
+        ///  水平翻转
         /// </summary>
         /// <param name="texture"></param>
         /// <returns></returns>
@@ -106,7 +106,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     垂直翻转
+        ///  垂直翻转
         /// </summary>
         /// <param name="texture"></param>
         /// <returns></returns>
@@ -125,7 +125,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     图片逆时针旋转90度
+        ///  图片逆时针旋转90度
         /// </summary>
         /// <param name="src">原图片二进制数据</param>
         /// <param name="srcW">原图片宽度</param>
@@ -149,7 +149,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     图片顺时针旋转90度
+        ///  图片顺时针旋转90度
         /// </summary>
         /// <param name="src">原图片二进制数据</param>
         /// <param name="srcW">原图片宽度</param>
@@ -169,7 +169,7 @@ namespace YuoTools.Extend.Helper
         }
 
         /// <summary>
-        ///     两张图合并
+        ///  两张图合并
         /// </summary>
         /// <param name="baseTexture2D"></param>
         /// <param name="texture2D"></param>
@@ -210,12 +210,12 @@ namespace YuoTools.Extend.Helper
         public static async void SaveTexture(Texture2D tex, string path)
         {
             var byt = tex.EncodeToPNG();
-            await FileHelper.CheckFilePathOrCreate(path);
+            await FileHelper.CheckOrCreateFilePathAsync(path);
             await File.WriteAllBytesAsync(path, byt);
         }
 
         /// <summary>
-        ///     读取图片
+        ///  读取图片
         /// </summary>
         public static ETTask<Texture2D> LoadTexture(string path)
         {
@@ -247,10 +247,8 @@ namespace YuoTools.Extend.Helper
 
 
         /// <summary>
-        ///     截屏
+        ///  截屏
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
         private static IEnumerator IScreenShoot(ETTask<Texture2D> task)
         {
             //图片大小  
@@ -263,6 +261,7 @@ namespace YuoTools.Extend.Helper
             yield return tex;
             task.SetResult(tex);
         }
+        
         // /// <summary>
         // /// 修改图片水平和垂直像素量
         // /// </summary>

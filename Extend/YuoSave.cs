@@ -4,29 +4,27 @@ using System.IO;
 using System.Threading.Tasks;
 using ET;
 using Newtonsoft.Json;
-using Sirenix.Utilities;
 using UnityEngine;
-using Sirenix.OdinInspector;
 using YuoTools.Extend.Helper;
 using YuoTools.Main.Ecs;
 
 namespace YuoTools.ECS
 {
     [Serializable]
-    public partial class SaveManagerComponent : YuoComponent
+    public partial class SaveManagerComponent : YuoComponentInstance<SaveManagerComponent>
     {
-        [HorizontalGroup] public List<string> saveTypeKeys = new();
-        [HorizontalGroup] public List<Type> SaveTypes = new();
-        [HorizontalGroup] public List<YuoSaveAttribute> SaveTypeInfo = new();
+        public List<string> saveTypeKeys = new();
+        public List<Type> SaveTypes = new();
+        public List<YuoSaveAttribute> SaveTypeInfo = new();
         public string savePath = "";
 
         //--------逻辑--------
 
-        [SerializeField] Dictionary<string, GamData> _allData = new();
+        [SerializeField] Dictionary<string, GameData> _allData = new();
 
-        public GamData data = new();
+        public GameData data = new();
 
-        Type GetType(string key)
+        public Type GetType(string key)
         {
             if (saveTypeKeys.Contains(key))
             {
@@ -36,7 +34,7 @@ namespace YuoTools.ECS
             return null;
         }
 
-        string GetKey(Type type)
+        public string GetKey(Type type)
         {
             if (SaveTypes.Contains(type))
             {
@@ -64,16 +62,8 @@ namespace YuoTools.ECS
             }
         }
 
-        JsonSerializerSettings settings = new();
-
         public void Init()
         {
-            //设置日期格式
-            //settings.DateFormatString = "yyyy-MM-dd";
-            //忽略空值
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            //缩进
-            //settings.Formatting = Formatting.Indented;
             "开始初始化保存组件".Log();
 
             foreach (var type in World.Instance.GetAllComponents().Keys)
@@ -96,12 +86,12 @@ namespace YuoTools.ECS
             }
         }
 
-        public void SaveSceneData(int id)
+        public void SaveSceneDataOfIndex(int id)
         {
-            if (!_allData.ContainsKey(ECS.SaveGroup.Save)) _allData.Add(ECS.SaveGroup.Save, new GamData());
+            if (!_allData.ContainsKey(ECS.SaveGroup.Save)) _allData.Add(ECS.SaveGroup.Save, new GameData());
             data = _allData[$"Save/{ECS.SaveGroup.Save}_{id}"];
             DicList<long, YuoComponent> entities = new();
-            foreach (var entity in World.Scene.GetAllChild())
+            foreach (var entity in World.Scene.Children)
             {
                 foreach (var component in entity.Components)
                 {
@@ -112,7 +102,8 @@ namespace YuoTools.ECS
                 }
             }
 
-            SaveEntities(entities);
+            SerializeEntities(entities);
+            UpdateParent(data);
             SaveFile();
         }
 
@@ -136,7 +127,7 @@ namespace YuoTools.ECS
         public async ETTask<FileInfo> GetSaveInfo(int id)
         {
             var path = $"{savePath}/Save_{id}/Save.json";
-            await FileHelper.CheckFilePathOrCreate(path);
+            await FileHelper.CheckOrCreateFilePathAsync(path);
             return await FileHelper.GetFileInfo(path);
         }
 
@@ -151,10 +142,11 @@ namespace YuoTools.ECS
             return null;
         }
 
-        public void SaveGroup(string groupName)
+        public void SaveGroup(string groupName, string path = "/GameSave")
         {
-            if (!_allData.ContainsKey(groupName)) _allData.Add(groupName, new GamData());
+            if (!_allData.ContainsKey(groupName)) _allData.Add(groupName, new GameData());
             data = _allData[groupName];
+            //先把需要保存的实体存起来
             DicList<long, YuoComponent> entities = new();
             foreach (var components in World.Instance.GetAllComponents())
             {
@@ -169,28 +161,36 @@ namespace YuoTools.ECS
                 }
             }
 
-            SaveEntities(entities);
-            SaveFile(groupName);
+            //序列化实体
+            SerializeEntities(entities);
+            //保存父子物体关系
+            UpdateParent(data);
+            //保存文件
+            SaveFile(groupName, path);
         }
 
-        void SaveEntities(DicList<long, YuoComponent> entities)
+        /// <summary>
+        /// 将实体序列化
+        /// </summary>
+        /// <param name="entities"></param>
+        void SerializeEntities(DicList<long, YuoComponent> entities)
         {
             foreach (var entity in entities)
             {
                 var id = entity.Key;
                 Dictionary<string, string> components;
-                if (!data.entities.ContainsKey(entity.Key))
+                if (!data.Entities.ContainsKey(entity.Key))
                 {
                     components = new Dictionary<string, string>();
-                    data.entities.Add(id, components);
+                    data.Entities.Add(id, components);
                 }
                 else
                 {
-                    components = data.entities[id];
+                    components = data.Entities[id];
                 }
 
                 //保存前调用
-                World.Instance.RunSystemOfTag<IOnSave>(World.Instance.GetEntity(id));
+                World.RunSystem<IOnSave>(World.Instance.GetEntity(id));
 
                 foreach (YuoComponent component in entity.Value)
                 {
@@ -202,45 +202,186 @@ namespace YuoTools.ECS
             }
         }
 
-        void SaveFile(string groupName = ECS.SaveGroup.Save)
+        /// <summary>
+        /// 保存一个实体和所有子物体的所有组件,不需要挂载yuoSave特性
+        /// </summary>
+        public void SaveEntity(YuoEntity saveEntity,
+            SerializeType serializeType = SerializeType.NewtonsoftJson)
         {
-            //保存文本文件到路径
-            if (_allData.TryGetValue(groupName, out GamData gamData))
+            GameDataForType dataForType = new();
+            dataForType.Entities = new();
+            List<YuoEntity> entities = new();
+            FindAll(saveEntity);
+            foreach (var entity in entities)
             {
-                string text = JsonConvert.SerializeObject(gamData);
-                //判断文件夹是否存在，不存在则创建
-                if (!Directory.Exists(savePath))
-                {
-                    Directory.CreateDirectory(savePath);
-                }
+                var id = entity.ID;
+                Dictionary<string, string> components = new();
+                dataForType.Entities.Add(id, components);
+                //保存前调用
+                World.RunSystem<IOnSave>(World.Instance.GetEntity(id));
 
-                //保存文件
-                File.WriteAllText(savePath + $"/{groupName}.json", text);
-                $"{groupName}--保存成功--{text}".Log();
+                foreach (YuoComponent component in entity.Components.Values)
+                {
+                    string typeName = component.Name;
+
+                    if (!components.ContainsKey(typeName)) components.Add(typeName, null);
+                    components[typeName] = Serialize(component, serializeType);
+                    if (!dataForType.TypeDic.ContainsKey(typeName)) dataForType.TypeDic.Add(typeName, component.Type);
+                }
+            }
+
+            UpdateParentOfType(dataForType);
+
+            //保存文件
+            SaveText(Serialize(dataForType, serializeType), saveEntity.EntityName);
+
+            void FindAll(YuoEntity temp)
+            {
+                entities.AddRange(temp.Children);
+                foreach (var item in temp.Children)
+                {
+                    FindAll(item);
+                }
             }
         }
 
-        async Task SaveFile(GamData gamData, int id)
+        public void LoadEntity(YuoEntity saveEntity,
+            SerializeType serializeType = SerializeType.NewtonsoftJson)
+        {
+            var gameData = LoadFileOfType(saveEntity.EntityName, serializeType);
+            List<YuoEntity> newEntities = new();
+            foreach (var entityData in gameData.Entities)
+            {
+                var entity = World.Instance.GetEntity(entityData.Key);
+                if (entity != null)
+                {
+                    newEntities.Add(entity);
+                }
+            }
+
+            foreach (var entity in newEntities)
+            {
+                if (gameData.ParentDic.ContainsKey(entity.ID))
+                {
+                    World.Instance.SetParent(entity, World.Instance.GetEntity(gameData.ParentDic[entity.ID]));
+                }
+            }
+
+            foreach (var entityData in gameData.Entities)
+            {
+                var entity = World.Instance.GetEntity(entityData.Key);
+                if (entity == null)
+                {
+                    entity = saveEntity.AddChild(entityData.Key);
+                    foreach (var componentData in entityData.Value)
+                        try
+                        {
+                            {
+                                var type = gameData.TypeDic[componentData.Key];
+
+                                YuoComponent component =
+                                    Deserialize<YuoComponent>(componentData.Value, serializeType, type);
+                                entity.SetComponent(component);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            $"序列化错误 --- {e}".Log();
+                        }
+
+                    World.RunSystem<IOnLoadCreate>(entity);
+                }
+                else
+                {
+                    foreach (var componentData in entityData.Value)
+                    {
+                        try
+                        {
+                            var type = gameData.TypeDic[componentData.Key];
+
+                            YuoComponent component =
+                                Deserialize<YuoComponent>(componentData.Value, serializeType, type);
+                            entity.SetComponent(component, gameData.TypeDic[componentData.Key]);
+                        }
+                        catch (Exception e)
+                        {
+                            $"序列化错误 --- {e}".Log();
+                        }
+                    }
+                }
+            }
+
+            foreach (var entity in newEntities)
+            {
+                //加载后调用
+                World.RunSystem<IOnLoad>(entity);
+            }
+        }
+
+        void UpdateParent(GameData data)
+        {
+            data.ParentDic.Clear();
+            foreach (var entity in data.Entities)
+            {
+                var parent = World.Instance.GetEntity(entity.Key).Parent;
+                if (parent != null) data.ParentDic.Add(entity.Key, parent.ID);
+            }
+        }
+
+        void UpdateParentOfType(GameDataForType data)
+        {
+            data.ParentDic.Clear();
+            foreach (var entity in data.Entities)
+            {
+                var parent = World.Instance.GetEntity(entity.Key).Parent;
+                if (parent != null) data.ParentDic.Add(entity.Key, parent.ID);
+            }
+        }
+
+        void SaveFile(string groupName = ECS.SaveGroup.Save, string path = "/GameSave")
+        {
+            //保存文本文件到路径
+            if (_allData.TryGetValue(groupName, out GameData gamData))
+            {
+                string text = JsonConvert.SerializeObject(gamData);
+                SaveText(text, groupName, path);
+            }
+        }
+
+        void SaveText(string text, string fileName, string path = "/GameSave")
+        {
+            //判断文件夹是否存在，不存在则创建
+            if (!Directory.Exists(savePath))
+            {
+                Directory.CreateDirectory(savePath);
+            }
+
+            //保存文件
+            File.WriteAllText(savePath + $"{path}/{fileName}.json", text);
+            $"{fileName}--保存成功--{text}".Log();
+        }
+
+        async Task SaveFile(GameData gamData, int id)
         {
             //保存文本文件到路径
             string text = JsonConvert.SerializeObject(gamData);
             string path = savePath + $"/Save_{id}/Save.json";
-            await FileHelper.CheckFilePathOrCreate(path);
+            await FileHelper.CheckOrCreateFilePathAsync(path);
             //保存文件
             await File.WriteAllTextAsync(path, text);
         }
 
-        public void Load(string groupName = ECS.SaveGroup.Save)
+        public void LoadScene(string groupName = ECS.SaveGroup.Save)
         {
             LoadFile(groupName);
             if (_allData.ContainsKey(groupName))
             {
                 data = _allData[groupName];
-                LoadSceneData();
+                LoadOfParent(World.Scene);
             }
         }
 
-        public GamData LoadSceneData(int id)
+        public GameData LoadSceneData(int id)
         {
             string group = $"{ECS.SaveGroup.Save}_{id}/Save";
             LoadFile(group);
@@ -252,9 +393,23 @@ namespace YuoTools.ECS
             return null;
         }
 
-        void LoadFile(string groupName = ECS.SaveGroup.Save)
+        public void LoadFile(string groupName = ECS.SaveGroup.Save, string path = "/GameSave")
         {
-            var file = savePath + $"/{groupName}.json";
+            var file = savePath + $"{path}/{groupName}.json";
+
+            FileHelper.CheckOrCreateFilePath(file);
+
+            var text = File.ReadAllText(file);
+
+            if (!_allData.ContainsKey(groupName))
+                _allData.Add(groupName, null);
+            _allData[groupName] = JsonConvert.DeserializeObject<GameData>(text) ?? new GameData();
+        }
+
+        GameDataForType LoadFileOfType(string filename, SerializeType serializeType = SerializeType.NewtonsoftJson,
+            string path = "/GameSave")
+        {
+            var file = savePath + $"/GameSave/{filename}.json";
             if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
@@ -266,43 +421,68 @@ namespace YuoTools.ECS
             }
 
             var text = File.ReadAllText(file);
+            return Deserialize<GameDataForType>(text, serializeType) ?? new GameDataForType();
+        }
 
-            if (!_allData.ContainsKey(groupName))
-                _allData.Add(groupName, null);
-            _allData[groupName] = JsonConvert.DeserializeObject<GamData>(text) ?? new GamData();
+        GameData P_LoadFile(string path)
+        {
+            var file = path;
+            if (!Directory.Exists(savePath))
+            {
+                Directory.CreateDirectory(savePath);
+            }
+
+            if (!File.Exists(path))
+            {
+                File.WriteAllText(file, "");
+            }
+
+            var text = File.ReadAllText(file);
+            return JsonConvert.DeserializeObject<GameData>(text) ?? new GameData();
         }
 
         string SerializeComponent(YuoComponent component, Type type)
         {
-            return SaveTypeInfo[SaveTypes.IndexOf(type)].jsonType switch
+            return Serialize(component, SaveTypeInfo[SaveTypes.IndexOf(type)].serializeType);
+        }
+
+        private string Serialize<T>(T obj, SerializeType type)
+        {
+            return type switch
             {
-                SerializeType.JsonUtility => JsonUtility.ToJson(component),
-                SerializeType.NewtonsoftJson => JsonConvert.SerializeObject(component, settings),
-                _ => JsonUtility.ToJson(component)
+                SerializeType.JsonUtility => JsonUtility.ToJson(obj),
+                SerializeType.NewtonsoftJson => JsonConvert.SerializeObject(obj),
+                _ => JsonUtility.ToJson(obj)
+            };
+        }
+
+        private T Deserialize<T>(string text,
+            SerializeType serializeType = SerializeType.NewtonsoftJson, Type type = null)
+            where T : class
+        {
+            return serializeType switch
+            {
+                SerializeType.JsonUtility => JsonUtility.FromJson(text, type ?? typeof(T)) as T,
+                SerializeType.NewtonsoftJson => JsonConvert.DeserializeObject(text, type ?? typeof(T)) as T,
+                _ => JsonUtility.FromJson(text, type) as T
             };
         }
 
         YuoComponent DeserializeComponent(string componentData, Type type)
         {
-            return SaveTypeInfo[SaveTypes.IndexOf(type)].jsonType switch
-            {
-                SerializeType.JsonUtility =>
-                    JsonUtility.FromJson(componentData, type) as YuoComponent,
-                SerializeType.NewtonsoftJson =>
-                    JsonConvert.DeserializeObject(componentData, type) as YuoComponent,
-                _ => JsonUtility.FromJson(componentData, type) as YuoComponent,
-            };
+            return Deserialize<YuoComponent>(componentData, SaveTypeInfo[SaveTypes.IndexOf(type)].serializeType, type);
         }
 
-        public void LoadSceneData()
+        public void LoadOfParent(YuoEntity parent)
         {
             if (data == null) return;
-            foreach (var entityData in data.entities)
+            List<YuoEntity> newEntities = new();
+            foreach (var entityData in data.Entities)
             {
                 var entity = World.Instance.GetEntity(entityData.Key);
                 if (entity == null)
                 {
-                    entity = World.Scene.AddChild(entityData.Key);
+                    entity = parent.AddChild(entityData.Key);
                     List<YuoComponent> components = new();
                     foreach (var componentData in entityData.Value)
                     {
@@ -313,8 +493,7 @@ namespace YuoTools.ECS
                         components.Add(component);
                     }
 
-                    //加载后调用
-                    World.Instance.RunSystemOfTag<IOnLoadCreate>(entity);
+                    newEntities.Add(entity);
                 }
                 else
                 {
@@ -325,7 +504,7 @@ namespace YuoTools.ECS
                             var type = GetType(componentData.Key);
                             YuoComponent c = DeserializeComponent(componentData.Value, type);
                             entity.SetComponent(c);
-                            // World.Instance.RunSystemOfTag<IOnLoad>(c);
+                            // World.RunSystem<IOnLoad>(c);
                         }
                         catch (Exception e)
                         {
@@ -333,16 +512,30 @@ namespace YuoTools.ECS
                         }
                     }
 
-                    World.Instance.RunSystemOfTag<IOnLoad>(entity);
+                    World.RunSystem<IOnLoad>(entity);
                 }
+            }
+
+            foreach (var entity in newEntities)
+            {
+                if (data.ParentDic.ContainsKey(entity.ID))
+                {
+                    World.Instance.SetParent(entity, World.Instance.GetEntity(data.ParentDic[entity.ID]));
+                }
+            }
+
+            foreach (var entity in newEntities)
+            {
+                //加载后调用
+                World.RunSystem<IOnLoadCreate>(entity);
             }
         }
 
         public async Task CreateData(int id)
         {
-            GamData newData = new();
-            newData.OtherDatas.Add(OtherDataKey.Days, "1");
-            newData.OtherDatas.Add(OtherDataKey.SaveTime, "1");
+            GameData newData = new();
+            newData.OtherData.Add(OtherDataKey.Days, "1");
+            newData.OtherData.Add(OtherDataKey.SaveTime, "1");
             await SaveFile(newData, id);
         }
 
@@ -355,10 +548,19 @@ namespace YuoTools.ECS
         }
 
         [Serializable]
-        public class GamData
+        public class GameData
         {
-            public Dictionary<string, string> OtherDatas = new();
-            public Dictionary<long, Dictionary<string, string>> entities = new();
+            public Dictionary<long, Dictionary<string, string>> Entities = new();
+            public Dictionary<long, long> ParentDic = new();
+            public Dictionary<string, string> OtherData = new();
+        }
+
+        [Serializable]
+        public class GameDataForType
+        {
+            public Dictionary<long, Dictionary<string, string>> Entities = new();
+            public Dictionary<long, long> ParentDic = new();
+            public Dictionary<string, Type> TypeDic = new();
         }
     }
 
@@ -367,7 +569,7 @@ namespace YuoTools.ECS
         protected override void Run(SaveManagerComponent component)
         {
             component.Init();
-            component.savePath = $"{Application.persistentDataPath}/GameSave".Log();
+            component.savePath = $"{Application.persistentDataPath}".Log();
 
             // foreach (var dir in await FileHelper.GetAllDirectory(Application.persistentDataPath))
             // {
@@ -388,11 +590,11 @@ namespace YuoTools.ECS
             {
                 key = KeyCode.Alpha2, OnDown = () =>
                 {
-                    component.Load(SaveGroup.Config);
+                    component.LoadScene(SaveGroup.Config);
                     "读档完成".Log();
                 }
             });
-            component.Load(SaveGroup.Config);
+            component.LoadScene(SaveGroup.Config);
         }
     }
 
@@ -404,7 +606,7 @@ namespace YuoTools.ECS
         }
     }
 
-    public static class SaveGroup
+    public static partial class SaveGroup
     {
         /// <summary>
         /// 游戏存档
@@ -425,56 +627,6 @@ namespace YuoTools.ECS
         /// 语言文件
         /// </summary>
         public const string Language = "Language";
-    }
-
-    /// <summary>
-    /// 自动保存组件信息,需要继承YuoComponent才会被调用
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public class YuoSaveAttribute : Attribute
-    {
-        public readonly string SaveName;
-        public readonly string GroupName = SaveGroup.Save;
-        public readonly bool haveName;
-        public readonly SerializeType jsonType = SerializeType.JsonUtility;
-
-
-        /// <summary>
-        /// 自动保存这个组件
-        /// </summary>
-        /// <param name="saveName">覆盖类型名字</param>
-        /// <param name="jsonType"></param>
-        public YuoSaveAttribute(string saveName, string GroupName = SaveGroup.Save,
-            SerializeType jsonType = SerializeType.JsonUtility)
-        {
-            this.SaveName = saveName;
-            this.GroupName = GroupName;
-            this.haveName = true;
-            this.jsonType = jsonType;
-        }
-
-        public YuoSaveAttribute(SerializeType jsonType) : this()
-        {
-            this.jsonType = jsonType;
-        }
-
-        public YuoSaveAttribute(string GroupName, SerializeType jsonType) : this()
-        {
-            this.GroupName = GroupName;
-            this.jsonType = jsonType;
-        }
-
-        public YuoSaveAttribute()
-        {
-            haveName = false;
-        }
-    }
-
-    public enum SerializeType
-    {
-        JsonUtility = 0,
-        NewtonsoftJson = 1,
-        SerializationUtility = 2,
     }
 
     /// <summary>

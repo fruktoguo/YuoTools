@@ -122,14 +122,14 @@ public class YuoAStarSearch : SerializedMonoBehaviour
         YuoGrid endYuoGrid = Map[TargetX, TargetY];
         Min = startYuoGrid;
         Open(startYuoGrid, null);
-        //最大寻路次数,防止卡死
+        //????路????,???????
         int MaxSearchNum = 100000;
         while (openQueue.Count > 0)
         {
             MaxSearchNum--;
             if (MaxSearchNum < 0)
             {
-                Debug.LogError("溢出了");
+                Debug.LogError("?????");
                 return;
             }
             FindNeighbors(Min);
@@ -142,7 +142,7 @@ public class YuoAStarSearch : SerializedMonoBehaviour
     }
 
     /// <summary>
-    /// 找到周围的点加到Openlist
+    /// ?????围?????Openlist
     /// </summary>
     /// <param name="grid"></param>
     private void FindNeighbors(YuoGrid grid)
@@ -151,14 +151,14 @@ public class YuoAStarSearch : SerializedMonoBehaviour
         {
             for (int y = -1; y < 2; y++)
             {
-                //去除掉自己
+                //????????
                 if (x == 0 && y == 0)
                     continue;
-                //不能超出边界
+                //??????????
                 if (!(grid.x + x).InRange(0, MapSizeX - 1) || !(grid.y + y).InRange(0, MapSizeY - 1))
                     continue;
                 var gridTemp = Map[grid.x + x, grid.y + y];
-                //是否是墙体
+                //????????
                 if (!gridTemp.CanMove)
                     continue;
                 if (gridTemp.Open || gridTemp.Close)
@@ -236,7 +236,7 @@ public class YuoAStarSearch : SerializedMonoBehaviour
 
         public bool CanMove;
 
-        // 寻路标记
+        // ?路???
         public bool Open;
 
         public bool Close;

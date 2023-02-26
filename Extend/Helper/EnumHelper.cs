@@ -23,5 +23,10 @@ namespace YuoTools.Extend.Helper
 
             return (T) Enum.Parse(typeof(T), str);
         }
+        
+        public static T[] GetValues<T>()
+        {
+            return (T[]) Enum.GetValues(typeof(T));
+        }
     }
 }

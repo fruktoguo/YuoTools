@@ -11,10 +11,10 @@ namespace YuoTools
         private List<UnityAction<T>> actions = new List<UnityAction<T>>();
 
         /// <summary>
-        /// Ìí¼ÓÊÂ¼ş
+        /// æ·»åŠ äº‹ä»¶
         /// </summary>
         /// <param name="action"></param>
-        /// <param name="single">Í¬Ò»¸öÊÂ¼ş½öÄÜÌí¼ÓÒ»´Î</param>
+        /// <param name="single">åŒä¸€ä¸ªäº‹ä»¶ä»…èƒ½æ·»åŠ ä¸€æ¬¡</param>
         public void AddAction(UnityAction<T> action, bool single = false)
         {
             if (!single || !actions.Contains(action))
@@ -24,7 +24,7 @@ namespace YuoTools
         }
 
         /// <summary>
-        /// ÒÆ³ıÊÂ¼ş
+        /// ç§»é™¤äº‹ä»¶
         /// </summary>
         /// <param name="action"></param>
         public void RemoveAction(UnityAction<T> action)
@@ -41,7 +41,7 @@ namespace YuoTools
         }
 
         /// <summary>
-        /// Í³Ò»Ö´ĞĞÊÂ¼ş
+        /// ç»Ÿä¸€æ‰§è¡Œäº‹ä»¶
         /// </summary>
         public void Invoke()
         {

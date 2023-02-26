@@ -31,8 +31,9 @@ namespace YuoTools.ECS
         private float SoundValue = 1;
         private List<ETTask> AllTask = new ();
 
-        public void Awake()
+        public override void Awake()
         {
+            base.Awake();
             DontDestroyOnLoad(gameObject);
             Bg = new SoundData() { source = gameObject.AddComponent<AudioSource>() };
             Bg.source.playOnAwake = false;

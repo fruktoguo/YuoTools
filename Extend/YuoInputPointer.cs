@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
+using UnityEngine.Events;
 using YuoTools.Main.Ecs;
 
-namespace YuoTools.ECS
+namespace YuoTools.Extend
 {
     public class YuoInputPointerSystem : YuoSystem<YuoInputPointerComponent>, IUpdate
     {
@@ -17,14 +14,19 @@ namespace YuoTools.ECS
         }
     }
 
-    public partial class YuoInputPointerComponent : YuoComponent
+    [AutoAddToMain()]
+    public partial class YuoInputPointerComponent : YuoComponentInstance<YuoInputPointerComponent>
     {
         readonly Dictionary<int, Touch> LastTouchs = new Dictionary<int, Touch>();
-        List<TouchItem> TouchItems = new List<TouchItem>();
+        [SerializeField] List<TouchItem> TouchItems = new List<TouchItem>();
     }
 
     public partial class YuoInputPointerComponent
     {
+        public UnityEvent<TouchItem> OnTouchDown = new UnityEvent<TouchItem>();
+        public UnityEvent<TouchItem> OnTouchUp = new UnityEvent<TouchItem>();
+        public UnityEvent<TouchItem> OnTouchMove = new UnityEvent<TouchItem>();
+
         public void Update()
         {
 #if UNITY_EDITOR || !UNITY_ANDROID
@@ -39,6 +41,7 @@ namespace YuoTools.ECS
                     phase = TouchPhase.Began,
                 };
                 item.Down(item.touch);
+                OnTouchDown?.Invoke(item);
             }
             else if (Input.GetMouseButton(0))
             {
@@ -50,6 +53,7 @@ namespace YuoTools.ECS
                     phase = TouchPhase.Moved,
                 };
                 item.Drag(item.touch);
+                OnTouchMove?.Invoke(item);
             }
             else if (Input.GetMouseButtonUp(0))
             {
@@ -61,6 +65,7 @@ namespace YuoTools.ECS
                     phase = TouchPhase.Ended,
                 };
                 item.Up(item.touch);
+                OnTouchUp?.Invoke(item);
             }
 #else
             foreach (var touch in Input.touches)
@@ -71,13 +76,16 @@ namespace YuoTools.ECS
                 {
                     item.touch = touch;
                     item.Drag(touch);
-
+                    
+                    OnTouchMove?.Invoke(item);
                 }
                 else
                 {
                     item.touch = touch;
                     item.Down(touch);
-
+                    
+                    OnTouchDown?.Invoke(item);
+                    
                     item.Dragging = true;
                 }
 
@@ -96,6 +104,9 @@ namespace YuoTools.ECS
                     item.touch = touch;
 
                     item.Up(touch);
+                    
+                    OnTouchUp?.Invoke(item);
+                    
                     item.Dragging = false;
                 }
             }

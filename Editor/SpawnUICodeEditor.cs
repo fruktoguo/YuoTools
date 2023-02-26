@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -8,10 +10,12 @@ using YuoTools;
 using YuoTools.Editor;
 using YuoTools.Extend.UI;
 using YuoTools.YuoEditor;
+using Object = UnityEngine.Object;
 
+[Obsolete("Obsolete")]
 public class SpawnUICodeEditor
 {
-    // [MenuItem("GameObject/YuoUI/Éú³É´°¿ÚUI´úÂë", false, -2)]
+    // [MenuItem("GameObject/YuoUI/ç”Ÿæˆçª—å£UIä»£ç ", false, -2)]
     // public static void CreateUICode()
     // {
     //     foreach (var go in Selection.gameObjects)
@@ -20,7 +24,7 @@ public class SpawnUICodeEditor
     //     }
     // }
 
-    [MenuItem("GameObject/YuoUI/´´½¨UI", false, -2)]
+    [MenuItem("GameObject/YuoUI/åˆ›å»ºUI", false, -2)]
     public static void CreateUI()
     {
         GameObject go = Resources.Load<GameObject>("YuoUI/UI_Window");
@@ -28,87 +32,202 @@ public class SpawnUICodeEditor
         go.name = "New_UI_Window";
     }
 
-    [MenuItem("GameObject/YuoUIÃüÃû/½«UIµÄÃû×Ö¸Ä³ÉÍ¼Æ¬µÄÃû×Ö", false, -2)]
+    [MenuItem("GameObject/YuoUI/å°†Textæ”¹æˆTMP", false, -2)]
+    public static void ChangeTextToTMP()
+    {
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        foreach (var text in EditorTools.GetAllSelectComponent<Text>(true))
+        {
+            var go = text.gameObject;
+            var message = text.text;
+            Object.DestroyImmediate(text);
+            go.AddComponent<TextMeshProUGUI>().text = message;
+        }
+    }
+
+    [MenuItem("GameObject/YuoUI/å°†TMPæ”¹æˆText", false, -2)]
+    public static void ChangeTMPToText()
+    {
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        foreach (var text in EditorTools.GetAllSelectComponent<TextMeshProUGUI>(true))
+        {
+            var go = text.gameObject;
+            var message = text.text;
+            Undo.DestroyObjectImmediate(text);
+            Undo.AddComponent<Text>(go).text = message;
+        }
+    }
+
+    [MenuItem("GameObject/YuoUIå‘½å/å°†UIçš„åå­—æ”¹æˆå›¾ç‰‡çš„åå­—", false, -2)]
     public static void ChangeNameForSprite()
     {
-        foreach (var image in EditorTools.GetAllSelectComponent<Image>(true))
+        var sprites = EditorTools.GetAllSelectComponent<Image>(true);
+        Undo.RecordObjects(sprites.ToArray(), "ChangeNameForSprite");
+        foreach (var image in sprites)
         {
             image.name = image.sprite?.name;
         }
     }
 
-    [MenuItem("GameObject/YuoUIÃüÃû/½«UIµÄÃû×Ö¸Ä³ÉÎÄ±¾", false, -2)]
+    [MenuItem("GameObject/YuoUIå‘½å/å°†UIçš„åå­—æ”¹æˆæ–‡æœ¬", false, -2)]
     public static void ChangeNameForText()
     {
-        foreach (var text in EditorTools.GetAllSelectComponent<Text>(true))
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        var texts = EditorTools.GetAllSelectComponent<Text>(true);
+        var tmps = EditorTools.GetAllSelectComponent<TextMeshProUGUI>(true);
+        var all = new List<Object>();
+        all.AddRange(texts);
+        all.AddRange(tmps);
+        Undo.RecordObjects(all.ToArray(), "ChangeNameForText");
+        foreach (var text in texts)
         {
             text.name = text.text;
         }
-        foreach (var text in EditorTools.GetAllSelectComponent<TextMeshProUGUI>(true))
+
+        foreach (var text in tmps)
         {
             text.name = text.text;
         }
     }
 
-    private static float _lastTime = int.MinValue;
+    private static long _lastTime = long.MinValue;
 
-    [MenuItem("GameObject/YuoUIÃüÃû/ÇĞ»»ÊÇ·ñ±»¿ò¼Ü¼ìË÷_C", false, -2)]
+    static void ChangeUITag(string thisTag, Object go)
+    {
+        foreach (var tag in SpawnUICodeConfig.AllTag)
+        {
+            if (go.name.StartsWith(tag))
+            {
+                if (tag == thisTag)
+                {
+                    go.name = go.name.Replace(thisTag, "");
+                }
+                else
+                {
+                    go.name = go.name.Replace(tag, "");
+                    go.name = thisTag + go.name;
+                }
+
+                return;
+            }
+        }
+
+        go.name = thisTag + go.name;
+    }
+
+    [MenuItem("GameObject/YuoUIå‘½å/åˆ‡æ¢æ˜¯å¦è¢«æ¡†æ¶æ£€ç´¢_C", false, -2)]
     public static void ChangeNameForFrame()
     {
-        if (_lastTime.ApEqual(Time.realtimeSinceStartup))
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
         {
             return;
         }
 
-        _lastTime = Time.realtimeSinceStartup;
-        foreach (var go in Selection.objects)
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+
+        Object[] selections = Selection.objects;
+        Undo.SetCurrentGroupName($"åˆ‡æ¢æ˜¯å¦è¢«æ¡†æ¶æ£€ç´¢_C [æ•°é‡:{selections.Length}]");
+        Undo.RecordObjects(selections, "åˆ‡æ¢æ˜¯å¦è¢«æ¡†æ¶æ£€ç´¢_C");
+        foreach (Object go in selections)
         {
-            if (go.name.StartsWith("C_"))
-                go.name = go.name.Replace("C_", "");
-            else
-            {
-                go.name = "C_" + go.name;
-            }
+            ChangeUITag(SpawnUICodeConfig.UIComponentTag, go);
         }
+
+        Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
     }
 
-    [MenuItem("GameObject/YuoUIÃüÃû/ÇĞ»»UI×ÓÃæ°å_D", false, -2)]
+    [MenuItem("GameObject/YuoUIå‘½å/åˆ‡æ¢æ˜¯å¦ä¸ºå˜ä½“çš„ç»„ä»¶_CV", false, -2)]
+    public static void ChangeNameForFrameVariant()
+    {
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        Object[] selections = Selection.objects;
+        Undo.SetCurrentGroupName($"åˆ‡æ¢æ˜¯å¦ä¸ºå˜ä½“çš„ç»„ä»¶_CV [æ•°é‡:{selections.Length}]");
+        Undo.RecordObjects(selections, "åˆ‡æ¢æ˜¯å¦ä¸ºå˜ä½“çš„ç»„ä»¶_CV");
+        foreach (var go in selections)
+        {
+            ChangeUITag(SpawnUICodeConfig.VariantChildComponentTag, go);
+        }
+
+        Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+    }
+
+    [MenuItem("GameObject/YuoUIå‘½å/åˆ‡æ¢UIå­é¢æ¿_D", false, -2)]
     public static void ChangeNameForChild()
     {
-        if (_lastTime.ApEqual(Time.realtimeSinceStartup))
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
         {
             return;
         }
 
-        _lastTime = Time.realtimeSinceStartup;
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
         foreach (var go in Selection.gameObjects)
         {
-            if (go.name.StartsWith("D_"))
-                go.name = go.name.Replace("D_", "");
-            else
-            {
-                go.name = "D_" + go.name;
-            }
+            ChangeUITag(SpawnUICodeConfig.ChildUITag, go);
         }
     }
 
-    [MenuItem("GameObject/YuoUIÃüÃû/ÇĞ»»¹«¹²UI_G", false, -2)]
-    public static void ChangeNameForG()
+    [MenuItem("GameObject/YuoUIå‘½å/åˆ‡æ¢UIå­é¢æ¿å˜ä½“_DV", false, -2)]
+    public static void ChangeNameForChildVariant()
     {
-        if (_lastTime.ApEqual(Time.realtimeSinceStartup))
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
         {
             return;
         }
 
-        _lastTime = Time.realtimeSinceStartup;
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
         foreach (var go in Selection.gameObjects)
         {
-            if (go.name.StartsWith("G_"))
-                go.name = go.name.Replace("G_", "");
-            else
-            {
-                go.name = "G_" + go.name;
-            }
+            ChangeUITag(SpawnUICodeConfig.VariantChildUITag, go);
+        }
+    }
+
+    [MenuItem("GameObject/YuoUIå‘½å/åˆ‡æ¢å…¬å…±UI_G", false, -2)]
+    public static void ChangeNameForG()
+    {
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        foreach (var go in Selection.gameObjects)
+        {
+            ChangeUITag(SpawnUICodeConfig.GeneralUITag, go);
+        }
+    }
+
+    [MenuItem("GameObject/YuoUIå‘½å/ç§»é™¤ç©ºæ ¼", false, -2)]
+    public static void ChangeNameRemoveSpace()
+    {
+        if (_lastTime.Equals(System.DateTime.Now.Ticks / 10000000))
+        {
+            return;
+        }
+
+        _lastTime = System.DateTime.Now.Ticks / 10000000;
+        foreach (var go in Selection.gameObjects)
+        {
+            go.name = go.name.Replace(" ", "");
         }
     }
 }

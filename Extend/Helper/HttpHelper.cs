@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using ICSharpCode.SharpZipLib.Core;
 using Newtonsoft.Json;
 
 namespace YuoTools.Extend.Helper
@@ -24,8 +23,29 @@ namespace YuoTools.Extend.Helper
                     result = new StreamReader(wr.GetResponseStream(), myEncoding).ReadToEnd();
                 }
             }
-            catch (Exception e)
+            catch
             {
+                // ignored
+            }
+
+            return result;
+        }
+
+        public static async Task<string> GetAsync(string url, string encoding = "utf-8")
+        {
+            string result = "";
+            try
+            {
+                Encoding myEncoding = Encoding.GetEncoding(encoding);
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+                req.Method = "GET";
+                using WebResponse wr = await req.GetResponseAsync();
+                //在这里对接收到的页面内容进行处理
+                result = await new StreamReader(wr.GetResponseStream(), myEncoding).ReadLineAsync();
+            }
+            catch
+            {
+                // ignored
             }
 
             return result;
@@ -55,7 +75,7 @@ namespace YuoTools.Extend.Helper
                 sr.Close();
                 response.Close();
             }
-            catch (Exception ex)
+            catch
             {
                 // ignored
             }
@@ -81,7 +101,7 @@ namespace YuoTools.Extend.Helper
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
                 // ignored
             }
@@ -117,8 +137,9 @@ namespace YuoTools.Extend.Helper
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
+                // ignored
             }
 
             return default(T);
@@ -163,10 +184,8 @@ namespace YuoTools.Extend.Helper
             string txt;
             try
             {
-                using (WebResponse wr = req.GetResponse())
-                {
-                    txt = new StreamReader(wr.GetResponseStream(), myEncoding).ReadToEnd();
-                }
+                using WebResponse wr = req.GetResponse();
+                txt = new StreamReader(wr.GetResponseStream(), myEncoding).ReadToEnd();
             }
             catch
             {
@@ -220,18 +239,12 @@ namespace YuoTools.Extend.Helper
             string txt;
             try
             {
-                using (Stream newStream = webReq.GetRequestStream())
-                {
-                    newStream.Write(byteArray, 0, byteArray.Length); //写入参数
-                    newStream.Close();
-                    using (HttpWebResponse response = (HttpWebResponse)webReq.GetResponse())
-                    {
-                        using (StreamReader sr = new StreamReader(response.GetResponseStream(), myEncoding))
-                        {
-                            txt = sr.ReadToEnd();
-                        }
-                    }
-                }
+                using Stream newStream = webReq.GetRequestStream();
+                newStream.Write(byteArray, 0, byteArray.Length); //写入参数
+                newStream.Close();
+                using HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
+                using StreamReader sr = new StreamReader(response.GetResponseStream(), myEncoding);
+                txt = sr.ReadToEnd();
             }
             catch
             {
@@ -262,7 +275,7 @@ namespace YuoTools.Extend.Helper
             string path = Path.GetDirectoryName(file);
             try
             {
-                await FileHelper.CheckFilePathOrCreate(path); //创建文件目录
+                await FileHelper.CheckOrCreateFilePathAsync(path); //创建文件目录
 
                 var tempFile = FileHelper.Combine(path, Guid.NewGuid().ToString("N") + ".temp"); //临时文件
                 if (File.Exists(tempFile)) File.Delete(tempFile); //存在则删除
@@ -305,10 +318,56 @@ namespace YuoTools.Extend.Helper
 
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
         }
+
+        public static async Task<(string fileName, int size)> GetDownloadFileInfo(string url)
+        {
+            var httpWebQuest = (HttpWebRequest)WebRequest.Create(url);
+            httpWebQuest.Method = "GET";
+            httpWebQuest.UserAgent = "Mozilla/5.0 (Windows NT 5.1; rv:19.0) Gecko/20100101 Firefox/19.0";
+            httpWebQuest.KeepAlive = false;
+            ServicePointManager.DefaultConnectionLimit = 200;
+            var httpWebResponse = (HttpWebResponse)await httpWebQuest.GetResponseAsync();
+            string locationInfo = httpWebResponse.ResponseUri.ToString();
+            string fileSize = httpWebResponse.Headers["Content-Length"];
+            string fileInfo = httpWebResponse.Headers["Content-Disposition"];
+            string mathkey = "filename=";
+
+            httpWebResponse.Close();
+
+            httpWebQuest.Abort();
+
+            var size = string.IsNullOrEmpty(fileSize) ? 0 : Convert.ToInt32(fileSize);
+
+            if (fileInfo == null)
+            {
+                //获取失败重新获取
+                if (!string.IsNullOrEmpty(locationInfo) && !locationInfo.Equals(url))
+                {
+                    return await GetDownloadFileInfo(locationInfo);
+                }
+
+                return (Path.GetFileName(url).Split('?')[0], size);
+            }
+
+            return (fileInfo.Substring(fileInfo.LastIndexOf(mathkey, StringComparison.Ordinal)).Replace(mathkey, "")
+                .Replace("\"", "").Split('?')[0], size);
+        }
+
+        // public static async Task<Texture> Download()
+        // {
+        //     //NovelAi
+        //     var api = "https://api.novelai.net";
+        //     var user = "80419110@qq.com";
+        //     var pwd = "yao19970921";
+        //     var referer = "https://novelai.net/";
+        //     var userAgent =
+        //         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
+        //     
+        // }
     }
 }

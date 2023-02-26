@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 using YuoTools.Main.Ecs;
 
 namespace YuoTools.Editor.Ecs
@@ -75,6 +77,11 @@ namespace YuoTools.Editor.Ecs
                 ForceMenuTreeRebuild();
             }
 
+            if (GUILayout.Button("刷新", GUILayout.Width(50)))
+            {
+                ForceMenuTreeRebuild();
+            }
+
             GUILayout.EndHorizontal();
             if (_isEntities)
             {
@@ -102,10 +109,10 @@ namespace YuoTools.Editor.Ecs
         {
             if (!Application.isPlaying) return;
             if (_isSystems) return;
-            if (_lastCount != World.Instance.GetAllEntity().Count)
+            if (_lastCount != World.Instance.Entities.Count)
             {
                 ForceMenuTreeRebuild();
-                _lastCount = World.Instance.GetAllEntity().Count;
+                _lastCount = World.Instance.Entities.Count;
             }
         }
 
@@ -172,10 +179,13 @@ namespace YuoTools.Editor.Ecs
                 }
 
                 SystemView view = new SystemView();
+                view.SystemOrder = system.GetType().GetCustomAttribute<SystemOrderAttribute>()?.Order ?? 0;
                 view.TimeConsuming = system.TimeConsuming;
                 view.System = system;
                 view.InfluenceType.AddRange(system.InfluenceTypes().Select(type => type.Name));
-                tree.Add(system.GetType().Name, view);
+                view.InterfaceType.AddRange(system.Type.GetInterfaces().Select(type => type.Name));
+                view.InterfaceType.Remove("ISystemTag");
+                tree.Add((system.Group == "" ? "" : $"{system.Group}/") + system.Name, view);
                 _systemViews.Add(view);
             }
 
@@ -189,8 +199,9 @@ namespace YuoTools.Editor.Ecs
                 {
                     ComponentView view = new()
                     {
-                        _entity = entity
+                        Entity = entity
                     };
+                    view.EntityID = entity.ID;
                     foreach (var component in entity.Components.Values)
                     {
                         if (!view.Components.Contains(component))
@@ -221,31 +232,36 @@ namespace YuoTools.Editor.Ecs
 
         public class ComponentView
         {
+            [ReadOnly] public long EntityID;
+
             [ListDrawerSettings(Expanded = true, HideAddButton = true, HideRemoveButton = true, DraggableItems = false,
-                ShowItemCount = false, ListElementLabelName = "@Type.Name",
+                ShowItemCount = false, ListElementLabelName = "@Name",
                 ElementColor = "ElementColor")]
             [ShowInInspector]
+            [HideIf("_count", 0)]
             public List<YuoComponent> Components = new();
 
-            [HideInInspector] public YuoEntity _entity;
-#if UNITY_EDITOR
+            [SerializeField] [ReadOnly] public YuoEntity Entity;
+
             private Color ElementColor(int index)
             {
                 return HashCodeToColor(Components[index].Type.GetHashCode());
             }
 
-#endif
-            public Color HashCodeToColor(int hashCode)
+            private Color HashCodeToColor(int hashCode)
             {
                 float h = Math.Abs(hashCode / 1.3f % 1f);
                 return Color.HSVToRGB(h, 0.6f, 0.55f);
             }
 
+            int _count;
+
             public void Update()
             {
-                if (_entity == null) return;
+                _count = Components.Count;
+                if (Entity == null) return;
                 Components.Clear();
-                foreach (var component in _entity.Components.Values)
+                foreach (var component in Entity.Components.Values)
                 {
                     if (!Components.Contains(component))
                     {
@@ -257,14 +273,25 @@ namespace YuoTools.Editor.Ecs
 
         public class SystemView
         {
+            [HorizontalGroup()]
             [ListDrawerSettings(Expanded = true, HideAddButton = true, HideRemoveButton = true, DraggableItems = false,
                 ShowItemCount = false)]
             [ShowInInspector]
             [ReadOnly]
             [LabelText("支持的类型")]
             public List<string> InfluenceType = new();
-            
-            [LabelText("执行耗时")] [SuffixLabel("毫秒")]
+
+            [HorizontalGroup()]
+            [ListDrawerSettings(Expanded = true, HideAddButton = true, HideRemoveButton = true, DraggableItems = false,
+                ShowItemCount = false)]
+            [ShowInInspector]
+            [ReadOnly]
+            [LabelText("触发的类型")]
+            public List<string> InterfaceType = new();
+
+            [ReadOnly] public short SystemOrder;
+
+            [LabelText("执行耗时")] [SuffixLabel("毫秒")] [ReadOnly]
             public double TimeConsuming;
 
             public SystemBase System;

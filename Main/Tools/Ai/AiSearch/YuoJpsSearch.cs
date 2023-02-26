@@ -7,7 +7,7 @@ namespace YuoTools
     public class YuoJpsSearch : MonoBehaviour
     {
         /// <summary>
-        /// º∆À„∑ΩœÚ
+        /// ËÆ°ÁÆóÊñπÂêë
         /// </summary>
         /// <param name="now"></param>
         /// <param name="end"></param>
@@ -40,26 +40,27 @@ namespace YuoTools
             }
         }
 
-        private int[,] _Map = new int[,] {
-            {0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0},
-            {0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0},
-            {0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
-            {0,0,1,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,1,0,0,1,0,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-            {0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        private int[,] _Map = new int[,]
+        {
+            { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+            { 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         };
 
         public YuoGrid[,] Map;
@@ -92,6 +93,7 @@ namespace YuoTools
                     go.AddComponent<GridTest>().grid = grid;
                 }
             }
+
             JumpPoints = new List<YuoGrid>();
         }
 
@@ -102,6 +104,7 @@ namespace YuoTools
             {
                 ComputeJump(item);
             }
+
             //YuoGrid last = null;
             //foreach (var item in JumpPoints)
             //{
@@ -119,20 +122,21 @@ namespace YuoTools
 
         private void ComputeJump(YuoGrid grid)
         {
-            //÷ª”–«ΩÃÂ∏ΩΩ¸ø…“‘Ã¯‘æ
+            //Âè™ÊúâÂ¢ô‰ΩìÈôÑËøëÂèØ‰ª•Ë∑≥Ë∑É
             if (grid.CanMove) return;
             for (int x = -1; x < 2; x++)
             {
                 for (int y = -1; y < 2; y++)
                 {
-                    //»•≥˝µÙ◊‘º∫
+                    //ÂéªÈô§ÊéâËá™Â∑±
                     if (x == 0 && y == 0)
                         continue;
-                    //–±∑ΩœÚ
+                    //ÊñúÊñπÂêë
                     if (x != 0 && y != 0)
                     {
-                        //»Áπ˚–±∑ΩœÚµƒ¡Ω∏ˆœ‡¡⁄÷±œﬂ∑ΩœÚø…“‘Õ®π˝
-                        if (CanMove(grid.x + x, grid.y + y) && CanMove(grid.x + x, grid.y) && CanMove(grid.x, grid.y + y))
+                        //Â¶ÇÊûúÊñúÊñπÂêëÁöÑ‰∏§‰∏™Áõ∏ÈÇªÁõ¥Á∫øÊñπÂêëÂèØ‰ª•ÈÄöËøá
+                        if (CanMove(grid.x + x, grid.y + y) && CanMove(grid.x + x, grid.y) &&
+                            CanMove(grid.x, grid.y + y))
                         {
                             SetJump(Map[grid.x + x, grid.y + y], x, y);
                         }
@@ -146,7 +150,7 @@ namespace YuoTools
             grid.CanJump = true;
             if (!JumpPoints.Contains(grid))
             {
-                //print("ÃÌº”¡À“ª∏ˆÃ¯µ„");
+                //print("Ê∑ªÂä†‰∫Ü‰∏Ä‰∏™Ë∑≥ÁÇπ");
                 JumpPoints.Add(grid);
                 grid.sr.color = Color.green;
             }
@@ -183,9 +187,7 @@ namespace YuoTools
                 {
                     var Dir = dir;
                     Dir *= -1;
-                    bool ThisDirIsOver = false;
-                    int dirNum = 1;
-                    //…œœ¬∑ΩœÚµƒæÕÕ˘◊Û”“’“,◊Û”“∑ΩœÚµƒæÕÕ˘…œœ¬’“
+                    //‰∏ä‰∏ãÊñπÂêëÁöÑÂ∞±ÂæÄÂ∑¶Âè≥Êâæ,Â∑¶Âè≥ÊñπÂêëÁöÑÂ∞±ÂæÄ‰∏ä‰∏ãÊâæ
                     Vector2Int nextDir1;
                     Vector2Int nextDir2;
                     if (Dir.x == 0)
@@ -198,139 +200,79 @@ namespace YuoTools
                         nextDir1 = Vector2Int.up;
                         nextDir2 = Vector2Int.down;
                     }
-                    if (true)
+
+                    List<Branch> branches = new List<Branch>();
+                    Branch MainBranch = new Branch() { dir = Dir, pos = new Vector2Int(item.x, item.y) };
+                    bool over = false;
+                    while (!over)
                     {
-                        List<Branch> branches = new List<Branch>();
-                        Branch MainBranch = new Branch() { dir = Dir, pos = new Vector2Int(item.x, item.y) };
-                        bool over = false;
-                        while (!over)
+                        YuoGrid grid = null;
+                        if (!MainBranch.Stop)
                         {
-                            YuoGrid grid = null;
-                            if (!MainBranch.Stop)
+                            grid = GetGrid(MainBranch.Next());
+                            if (grid == null)
                             {
-                                grid = GetGrid(MainBranch.Next());
-                                if (grid == null)
-                                {
-                                    MainBranch.Stop = true;
-                                }
+                                MainBranch.Stop = true;
                             }
-                            if (!MainBranch.Stop)
+                        }
+
+                        if (!MainBranch.Stop)
+                        {
+                            if (!grid.CanMove)
                             {
-                                if (!grid.CanMove)
-                                {
-                                    MainBranch.Stop = true;
-                                }
-                                else
-                                {
-                                    branches.Add(new Branch() { dir = nextDir1, pos = MainBranch.pos });
-                                    branches.Add(new Branch() { dir = nextDir2, pos = MainBranch.pos });
-                                }
-                                if (grid.CanJump)
-                                {
-                                    await YuoWait.WaitTimeAsync(0.1f);
-                                    DebugConnect(item, grid);
-                                    over = true;
-                                }
+                                MainBranch.Stop = true;
                             }
                             else
                             {
-                                bool JumpOut = true;
-                                foreach (var b in branches)
-                                {
-                                    if (!b.Stop)
-                                    {
-                                        JumpOut = false;
-                                    }
-                                }
-                                if (JumpOut)
-                                {
-                                    break;
-                                }
+                                branches.Add(new Branch() { dir = nextDir1, pos = MainBranch.pos });
+                                branches.Add(new Branch() { dir = nextDir2, pos = MainBranch.pos });
                             }
-                            foreach (var b in branches)
-                            {
-                                if (b.Stop) continue;
-                                var _grid = GetGrid(b.Next());
-                                if (_grid == null)
-                                {
-                                    b.Stop = true;
-                                    continue;
-                                }
-                                if (!_grid.CanMove)
-                                {
-                                    b.Stop = true;
-                                }
-                                if (_grid.CanJump)
-                                {
-                                    await YuoWait.WaitTimeAsync(0.1f);
-                                    DebugConnect(item, _grid);
-                                    over = true;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        while (!ThisDirIsOver)
-                        {
-                            //await YuoWait.WaitTimeAsync(0.01f);
-                            //Õ˘“ª∏ˆø…Õ®––∑ΩœÚ“ª÷±’“
-                            Vector2Int startPos = Dir * dirNum + new Vector2Int(item.x, item.y);
-                            //print(startPos);
-                            var grid = GetGrid(startPos);
-                            if (grid == null)
-                            {
-                                break;
-                            }
-                            if (!grid.CanMove)
-                            {
-                                break;
-                            }
+
                             if (grid.CanJump)
                             {
-                                ThisDirIsOver = true;
                                 await YuoWait.WaitTimeAsync(0.1f);
                                 DebugConnect(item, grid);
+                                over = true;
+                            }
+                        }
+                        else
+                        {
+                            bool JumpOut = true;
+                            foreach (var b in branches)
+                            {
+                                if (!b.Stop)
+                                {
+                                    JumpOut = false;
+                                }
+                            }
+
+                            if (JumpOut)
+                            {
                                 break;
                             }
+                        }
 
-                            //»Áπ˚¥À∑ΩœÚ’‚∏ˆŒª÷√√ª”–,æÕø™ ºÕ˘¡Ω±ﬂ’“
+                        foreach (var b in branches)
+                        {
+                            if (b.Stop) continue;
+                            var _grid = GetGrid(b.Next());
+                            if (_grid == null)
+                            {
+                                b.Stop = true;
+                                continue;
+                            }
 
-                            int posNum = 1;
-                            while (true)
+                            if (!_grid.CanMove)
                             {
-                                grid = GetGrid(startPos + posNum * nextDir1);
-                                if (grid == null)
-                                    break;
-                                if (!grid.CanMove)
-                                    break;
-                                if (grid.CanJump)
-                                {
-                                    ThisDirIsOver = true;
-                                    await YuoWait.WaitTimeAsync(0.1f);
-                                    DebugConnect(item, grid);
-                                    break;
-                                }
-                                posNum++;
+                                b.Stop = true;
                             }
-                            posNum = 1;
-                            while (true)
+
+                            if (_grid.CanJump)
                             {
-                                grid = GetGrid(startPos + posNum * nextDir2);
-                                if (grid == null)
-                                    break;
-                                if (!grid.CanMove)
-                                    break;
-                                if (grid.CanJump)
-                                {
-                                    ThisDirIsOver = true;
-                                    await YuoWait.WaitTimeAsync(0.1f);
-                                    DebugConnect(item, grid);
-                                    break;
-                                }
-                                posNum++;
+                                await YuoWait.WaitTimeAsync(0.1f);
+                                DebugConnect(item, _grid);
+                                over = true;
                             }
-                            dirNum++;
                         }
                     }
                 }
@@ -354,7 +296,8 @@ namespace YuoTools
         {
             start.sr.color = Color.yellow;
             var offset = Random.Range(0, 0f);
-            Debug.DrawLine(start.sr.transform.position + Vector3.one * offset, end.sr.transform.position + Vector3.one * offset, Color.white, 9999);
+            Debug.DrawLine(start.sr.transform.position + Vector3.one * offset,
+                end.sr.transform.position + Vector3.one * offset, Color.white, 9999);
         }
 
         private static Vector2Int GetDir(Dir dir)
@@ -399,7 +342,7 @@ namespace YuoTools
             return Map[x, y].CanMove;
         }
 
-        #region ¿‡–Õ
+        #region Á±ªÂûã
 
         public enum Dir
         {
@@ -438,7 +381,7 @@ namespace YuoTools
             public int y;
 
             /// <summary>
-            /// œ‘ æµƒ ±∫Ú±Íº«”√µƒ,ø…“‘…æ
+            /// ÊòæÁ§∫ÁöÑÊó∂ÂÄôÊ†áËÆ∞Áî®ÁöÑ,ÂèØ‰ª•Âà†
             /// </summary>
             public bool Tag;
 
@@ -447,10 +390,9 @@ namespace YuoTools
             internal bool CanJump;
             public JumpPoint jump = new JumpPoint();
 
-            [HideInInspector]
-            public SpriteRenderer sr;
+            [HideInInspector] public SpriteRenderer sr;
         }
 
-        #endregion ¿‡–Õ
+        #endregion Á±ªÂûã
     }
 }

@@ -27,11 +27,12 @@ namespace YuoTools.Extend.UI
         }
 #endif
 
-        private async void Start()
+        private async void Awake()
         {
             if (DontIstantiate)
             {
-                await World.Main.GetComponent<UIManagerComponent>().Open(gameObject.name, gameObject);
+                var o = gameObject;
+                await World.Main.GetComponent<UIManagerComponent>().Open(o.name, o);
             }
         }
 
@@ -46,13 +47,13 @@ namespace YuoTools.Extend.UI
             }
         }
 
-        // ReSharper disable once NotAccessedField.Local
-        [SerializeField] private bool openTools = false;
+        [ShowInInspector] public bool OpenTools { get; set; } = false;
 
-        [ShowIf("openTools", true)] [FoldoutGroup("Raycast")]
+
+        [ShowIf("OpenTools", true)] [FoldoutGroup("Raycast")]
         public List<MaskableGraphic> maskableGraphics = new List<MaskableGraphic>();
 
-        [ShowIf("openTools", true)]
+        [ShowIf("OpenTools", true)]
         [FoldoutGroup("Raycast")]
         [Button(ButtonHeight = 30, Name = "获取所有开启了Raycast的物体")]
         public void FindAllRaycast()
@@ -67,7 +68,7 @@ namespace YuoTools.Extend.UI
             }
         }
 
-        [ShowIf("openTools", true)]
+        [ShowIf("OpenTools", true)]
         [FoldoutGroup("Raycast")]
         [Button(ButtonHeight = 30, Name = "清除剩余Raycast")]
         public void CloseRaycast()

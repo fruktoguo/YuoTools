@@ -38,7 +38,7 @@ namespace YuoTools
             {
                 scalerValue = now.Remap(def, min, ScalerValue_Def, ScalerValue_Min);
             }
-            scaler.matchWidthOrHeight = scalerValue;
+            scaler.matchWidthOrHeight = scalerValue.RClamp(0, 1f);
         }
     }
 }

@@ -1,49 +1,73 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
-using YuoTools.Main.Ecs;
 
-namespace YuoTools.ECS
+namespace YuoTools.Main.Ecs
 {
     public abstract class BuffComponent : YuoComponent
     {
         public int BuffCount;
-        public int BuffMaxCount;
 
-        //剩余时间
-        public long StartTime;
-        public long EndTime;
-        public YuoOption<bool> BooleanOption = new();
+        /// <summary>
+        /// buff的最大层数,默认为1
+        /// </summary>
+        public virtual int BuffMaxCount { get; set; } = 1;
+
+        [ShowInInspector] public virtual string BuffName { get; set; } = "一个测试用的未命名Buff";
+        [ShowInInspector] public virtual string BuffDescription { get; set; } = "一个测试用的Buff描述";
+
+        public float StartTime;
+
+        /// <summary>
+        /// buff的持续时间,默认为1秒
+        /// </summary>
+        public virtual float Duration { get; set; } = 1;
+
+        public float EndTime;
     }
 
-    public class BuffManagerComponent : YuoComponent
+    [AutoAddToMain]
+    public class BuffManagerComponent : YuoComponentGet<BuffManagerComponent>
     {
-        public List<BuffComponent> Buffs = new List<BuffComponent>();
+        /// <summary>
+        /// 所有buff的索引,用于统一处理
+        /// </summary>
+        private List<BuffComponent> buffComponents = new();
 
-        public void AddBuff<T>(Main.Ecs.YuoEntity entity) where T : BuffComponent, new()
+        public void AddBuff<T>(YuoEntity entity) where T : BuffComponent, new()
         {
-            var component = entity.GetComponent<T>();
-            if (component == null)
+            var buffComponent = entity.GetComponent<T>();
+            if (buffComponent == null)
             {
-                component = entity.AddComponent<T>();
-                World.Instance.RunSystemOfTag<IBuffCreateBefore>(component);
-                if (component.BooleanOption.Get("CanAdd"))
-                {
-                    World.Instance.RunSystemOfTag<IBuffCreate>(component);
-                }
-                else
-                {
-                    World.Instance.RunSystemOfTag<IBuffCreateError>(component);
-                    entity.RemoveComponent(component);
-                }
+                buffComponent = entity.AddComponent<T>();
+                World.RunSystem<IBuffCreateBefore>(buffComponent);
+                World.RunSystem<IBuffCreate>(buffComponent);
+                buffComponents.Add(buffComponent);
             }
-            else
+
+            buffComponent.StartTime = Time.time;
+            buffComponent.EndTime = buffComponent.StartTime + buffComponent.Duration;
+
+            if (buffComponent.BuffCount < buffComponent.BuffMaxCount)
             {
-                if (component.BuffCount < component.BuffMaxCount)
+                buffComponent.BuffCount++;
+                World.RunSystem<IBuffAdd>(buffComponent);
+                World.RunSystem<IBuffChange>(buffComponent);
+            }
+        }
+
+        public void RemoveBuff<T>(YuoEntity entity) where T : BuffComponent, new()
+        {
+            var buffComponent = entity.GetComponent<T>();
+            if (buffComponent != null)
+            {
+                buffComponent.BuffCount--;
+                World.RunSystem<IBuffRemove>(buffComponent);
+                World.RunSystem<IBuffChange>(buffComponent);
+                if (buffComponent.BuffCount <= 0)
                 {
-                    component.BuffCount++;
-                    World.Instance.RunSystemOfTag<IBuffAdd>(component);
+                    entity.RemoveComponent<T>();
+                    World.RunSystem<IBuffDelete>(buffComponent);
                 }
             }
         }
@@ -61,12 +85,22 @@ namespace YuoTools.ECS
 
         List<BuffComponent> _tempDelete = new();
 
-        public void AfterUpdate()
+        public void Update()
         {
+            long nowTime = (long)(Time.time * 1000);
+            foreach (var buff in buffComponents)
+            {
+                //检查是否过期
+                if (buff.EndTime > nowTime)
+                {
+                    World.RunSystem<IBuffRemove>(buff);
+                }
+            }
+
             foreach (var buff in _tempDelete)
             {
-                Buffs.Remove(buff);
-                World.Instance.RunSystemOfTag<IBuffDelete>(buff);
+                buffComponents.Remove(buff);
+                World.RunSystem<IBuffDelete>(buff);
             }
 
             _tempDelete.Clear();
@@ -78,17 +112,7 @@ namespace YuoTools.ECS
     {
         protected override void Run(BuffManagerComponent component)
         {
-            long nowTime = (long) (Time.time * 1000);
-            foreach (var buff in component.Buffs)
-            {
-                //检查是否过期
-                if (buff.EndTime > nowTime)
-                {
-                    World.Instance.RunSystemOfTag<IBuffRemove>(buff);
-                }
-            }
-
-            component.AfterUpdate();
+            component.Update();
         }
     }
 
@@ -103,6 +127,13 @@ namespace YuoTools.ECS
     /// buff减少时
     /// </summary>
     public interface IBuffRemove : ISystemTag
+    {
+    }
+
+    /// <summary>
+    ///  当Buff层数产生任意改变时
+    /// </summary>
+    public interface IBuffChange : ISystemTag
     {
     }
 

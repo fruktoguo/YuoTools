@@ -300,12 +300,12 @@ namespace YuoTools
                 addSpeed, action));
         }
 
-        public static Coroutine To(this int f, int value, float needTime, YuoTweenCon.IntTo floatTo, float addSpeed = 0,
-            UnityAction action = null)
-        {
-            return YuoTweenCon.Instance.StartCoroutine(YuoTweenCon.Instance.IIntTo(f, value, needTime, floatTo,
-                addSpeed, action));
-        }
+        // public static Coroutine To(this int f, int value, float needTime, YuoTweenCon.IntTo floatTo, float addSpeed = 0,
+        //     UnityAction action = null)
+        // {
+        //     return YuoTweenCon.Get.StartCoroutine(YuoTweenCon.Get.IIntTo(f, value, needTime, floatTo,
+        //         addSpeed, action));
+        // }
 
         public static void To(this ref Vector3 f, Vector3 value, float needTime, YuoTweenCon.V3To floatTo,
             UnityAction action = null)

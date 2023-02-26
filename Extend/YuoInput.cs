@@ -3,12 +3,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using ET;
 using UnityEngine.Events;
-using YuoTools.ECS;
 using YuoTools.Main.Ecs;
 
 namespace YuoTools
 {
-    public partial class YuoInputComponent : YuoComponent
+    [AutoAddToMain()]
+    public partial class YuoInputComponent : YuoComponentInstance<YuoInputComponent>
     {
         [SerializeField] Dictionary<string, InputItem> _all = new();
         private Dictionary<string, ETTask> _allDown = new();
@@ -20,7 +20,7 @@ namespace YuoTools
         public virtual bool GetUp(KeyCode key) => false;
         public virtual bool GetKey(KeyCode key) => false;
     }
-
+[AutoAddToMain()]
     public class YuoInputCheckComponent : InputCheckBaseComponent
     {
         public override bool GetDown(KeyCode key)
@@ -172,10 +172,10 @@ namespace YuoTools
             }
         }
 
-        public void AddDown(string key, UnityAction down)
+        public void AddDown(string key,KeyCode code,UnityAction down)
         {
             if (!_all.ContainsKey(key))
-                _all.Add(key, new InputItem(key));
+                _all.Add(key, new InputItem(key,code));
             _all[key].OnDown += down;
         }
 

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Sirenix.Utilities;
 
 namespace YuoTools.Extend.Helper
 {
@@ -17,7 +16,7 @@ namespace YuoTools.Extend.Helper
         /// <param name="path">路径</param>
         /// <param name="pattern">通配符</param>
         /// <returns></returns>
-        public static List<string> GetFile(string path, string pattern = "*")
+        public static List<string> GetFiles(string path, string pattern = "*")
         {
             try
             {
@@ -27,8 +26,9 @@ namespace YuoTools.Extend.Helper
                     return result;
                 }
             }
-            catch (Exception e)
+            catch
             {
+                // ignored
             }
 
             return null;
@@ -58,24 +58,14 @@ namespace YuoTools.Extend.Helper
         public static List<string> GetAllFile(List<string> paths, string[] patterns = null)
         {
             List<string> result = new List<string>();
-            if (!paths.IsNullOrEmpty())
+            foreach (var path in paths)
             {
-                foreach (var path in paths)
-                {
-                    if (!patterns.IsNullOrEmpty())
+                if (patterns != null)
+                    foreach (var pattern in patterns)
                     {
-                        foreach (var pattern in patterns)
-                        {
-                            List<string> temp = GetFile(path, pattern);
-                            if (!temp.IsNullOrEmpty()) result.AddRange(temp);
-                        }
+                        List<string> temp = GetFiles(path, pattern);
+                        result.AddRange(temp);
                     }
-                    else
-                    {
-                        List<string> temp = GetFile(path);
-                        if (!temp.IsNullOrEmpty()) result.AddRange(temp);
-                    }
-                }
             }
 
             return result;
@@ -93,25 +83,29 @@ namespace YuoTools.Extend.Helper
         /// <summary>
         /// 获取文件夹下所有指定后缀名的文件
         /// </summary>
-        public static List<string> GetAllFilesOfExtension(string path, string extensionName)
+        public static string[] GetAllFilesOfExtension(string path, string extensionName)
         {
-            var list = new List<string>();
-            var dirs = Directory.GetFiles(path, "*." + extensionName);
-            foreach (var dir in dirs)
-            {
-                list.Add(dir);
-            }
-
-            return list;
+            var files = Directory.GetFiles(path, $"*{extensionName}", SearchOption.AllDirectories);
+            return files;
         }
 
+        /// <summary>
+        /// 删除文件夹下所有文件夹和文件
+        /// </summary>
+        /// <param name="dir"></param>
         public static void CleanDirectory(string dir)
         {
-            foreach (var subdir in Directory.GetDirectories(dir)) Directory.Delete(subdir, true);
+            foreach (var item in Directory.GetDirectories(dir)) Directory.Delete(item, true);
 
-            foreach (var subFile in Directory.GetFiles(dir)) File.Delete(subFile);
+            foreach (var item in Directory.GetFiles(dir)) File.Delete(item);
         }
 
+        /// <summary>
+        /// 复制文件夹到指定目录
+        /// </summary>
+        /// <param name="srcDir"></param>
+        /// <param name="tgtDir"></param>
+        /// <exception cref="Exception"></exception>
         public static void CopyDirectory(string srcDir, string tgtDir)
         {
             var source = new DirectoryInfo(srcDir);
@@ -135,6 +129,12 @@ namespace YuoTools.Extend.Helper
                 CopyDirectory(dirs[j].FullName, Path.Combine(target.FullName, dirs[j].Name));
         }
 
+        /// <summary>
+        /// 替换指定文件夹下的文件的后缀
+        /// </summary>
+        /// <param name="srcDir"></param>
+        /// <param name="extensionName"></param>
+        /// <param name="newExtensionName"></param>
         public static void ReplaceExtensionName(string srcDir, string extensionName, string newExtensionName)
         {
             if (Directory.Exists(srcDir))
@@ -144,7 +144,8 @@ namespace YuoTools.Extend.Helper
                 foreach (var fl in fls)
                     if (fl.EndsWith(extensionName))
                     {
-                        File.Move(fl, fl.Substring(0, fl.IndexOf(extensionName)) + newExtensionName);
+                        File.Move(fl,
+                            fl.Substring(0, fl.IndexOf(extensionName, StringComparison.Ordinal)) + newExtensionName);
                         File.Delete(fl);
                     }
 
@@ -154,7 +155,14 @@ namespace YuoTools.Extend.Helper
             }
         }
 
-        public static bool CopyFile(string sourcePath, string targetPath, bool overwrite)
+        /// <summary>
+        /// 复制文件到指定目录
+        /// </summary>
+        /// <param name="sourcePath"></param>
+        /// <param name="targetPath"></param>
+        /// <param name="overwrite"></param>
+        /// <returns></returns>
+        public static bool CopyFile(string sourcePath, string targetPath, bool overwrite = false)
         {
             string sourceText = null;
             string targetText = null;
@@ -177,23 +185,35 @@ namespace YuoTools.Extend.Helper
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static async Task<string> ReadAllText(string path)
+        public static async Task<string> ReadAllTextAsync(string path)
         {
-            await CheckFilePathOrCreate(path);
+            await CheckOrCreateFilePathAsync(path);
             return await File.ReadAllTextAsync(path);
         }
 
-        public static async Task WriteAllText(string path, string text)
+        public static string ReadAllText(string path)
         {
-            await CheckFilePathOrCreate(path);
+            CheckOrCreateFilePath(path);
+            return File.ReadAllText(path);
+        }
+
+        public static async Task WriteAllTextAsync(string path, string text)
+        {
+            await CheckOrCreateFilePathAsync(path);
             await File.WriteAllTextAsync(path, text);
         }
 
+        public static void WriteAllText(string path, string text)
+        {
+            CheckOrCreateFilePath(path);
+            File.WriteAllText(path, text);
+        }
+
         /// <summary>
-        ///     判断文件夹是否存在,不存在则创建
+        ///     判断文件是否存在,不存在则创建
         /// </summary>
         /// <param name="path"></param>
-        public static async Task CheckFilePathOrCreate(string path)
+        public static async Task CheckOrCreateFilePathAsync(string path)
         {
             //判断路径文件是否存在,不存在则创建
             if (!File.Exists(path))
@@ -206,12 +226,25 @@ namespace YuoTools.Extend.Helper
             }
         }
 
+        public static void CheckOrCreateFilePath(string path)
+        {
+            //判断路径文件是否存在,不存在则创建
+            if (!File.Exists(path))
+            {
+                //创建文件夹
+                var dir = Path.GetDirectoryName(path);
+                CheckOrCreateDirectoryPath(dir);
+
+                File.WriteAllTextAsync(path, "");
+            }
+        }
+
         public static bool CheckFilePath(string path)
         {
             return File.Exists(path);
         }
 
-        public static void CheckDirectoryPath(string path)
+        public static void CheckOrCreateDirectoryPath(string path)
         {
             if (!File.Exists(path))
             {
@@ -223,7 +256,7 @@ namespace YuoTools.Extend.Helper
 
         public static async Task<FileInfo> GetFileInfo(string path)
         {
-            await CheckFilePathOrCreate(path);
+            await CheckOrCreateFilePathAsync(path);
             return new FileInfo(path);
         }
 
@@ -245,9 +278,9 @@ namespace YuoTools.Extend.Helper
             return list;
         }
 
-
         public static List<string> GetChildDirectory(string path)
         {
+            CheckOrCreateDirectoryPath(path);
             return Directory.GetDirectories(path).ToList();
         }
 
@@ -268,8 +301,9 @@ namespace YuoTools.Extend.Helper
                 Directory.CreateDirectory(path);
                 return true;
             }
-            catch (Exception e)
+            catch
             {
+                // ignored
             }
 
             return false;
@@ -292,8 +326,9 @@ namespace YuoTools.Extend.Helper
                     {
                         return Directory.GetParent(p).ToString();
                     }
-                    catch (Exception e)
+                    catch
                     {
+                        // ignored
                     }
                 }
             }
@@ -313,8 +348,9 @@ namespace YuoTools.Extend.Helper
                 {
                     return Directory.EnumerateDirectories(path).ToList();
                 }
-                catch (Exception e)
+                catch
                 {
+                    // ignored
                 }
 
             return null;
@@ -328,21 +364,15 @@ namespace YuoTools.Extend.Helper
         public static List<string> GetAllPath(string path)
         {
             List<string> result = GetPath(path);
-            if (!result.IsNullOrEmpty())
+            List<string> temp = new List<string>();
+            foreach (var item in result)
             {
-                List<string> temp = new List<string>();
-                foreach (var item in result)
-                {
-                    List<string> t = GetAllPath(item);
-                    if (!t.IsNullOrEmpty())
-                        temp.AddRange(t);
-                }
-
-                result.AddRange(temp);
-                return result;
+                List<string> t = GetAllPath(item);
+                temp.AddRange(t);
             }
 
-            return null;
+            result.AddRange(temp);
+            return result;
         }
 
         /// <summary>
@@ -387,31 +417,24 @@ namespace YuoTools.Extend.Helper
         /// <returns></returns>
         public static string Combine(params string[] paths)
         {
-            if (!paths.IsNullOrEmpty())
+            if (paths.Length > 1)
             {
-                if (paths.Length > 1)
+                StringBuilder result = new StringBuilder(paths[0]);
+                for (int i = 1; i < paths.Length; i++)
                 {
-                    StringBuilder result = new StringBuilder(paths[0]);
-                    for (int i = 1; i < paths.Length; i++)
-                    {
-                        result.Append("\\");
-                        result.Append(paths[i]);
-                    }
-
-                    while (result.ToString().IndexOf("\\\\") >= 0)
-                    {
-                        result.Replace("\\\\", "\\");
-                    }
-
-                    return result.ToString();
+                    result.Append("\\");
+                    result.Append(paths[i]);
                 }
-                else
+
+                while (result.ToString().IndexOf("\\\\", StringComparison.Ordinal) >= 0)
                 {
-                    return paths[0];
+                    result.Replace("\\\\", "\\");
                 }
+
+                return result.ToString();
             }
 
-            return "";
+            return paths[0];
         }
 
         /// <summary>
@@ -468,31 +491,33 @@ namespace YuoTools.Extend.Helper
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 获取文件夹大小
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static long GetPathSize(string path)
         {
             long size = 0, _s = 0;
             try
             {
                 List<string> files = GetAllFile(path);
-                if (!files.IsNullOrEmpty())
+                foreach (var f in files)
                 {
-                    foreach (var f in files)
+                    if (File.Exists(f))
                     {
-                        if (File.Exists(f))
-                        {
-                            _s = Size(f);
-                            if (_s >= 0) size += _s;
-                        }
+                        _s = GetFileSize(f);
+                        if (_s >= 0) size += _s;
                     }
                 }
             }
             catch
             {
+                // ignored
             }
 
             return size;
         }
-
 
         /// <summary>
         /// 计算文件的 MD5 值
@@ -582,7 +607,6 @@ namespace YuoTools.Extend.Helper
             return false;
         }
 
-
         /// <summary>
         /// 删除文件
         /// </summary>
@@ -594,8 +618,9 @@ namespace YuoTools.Extend.Helper
             {
                 File.Delete(file);
             }
-            catch (Exception e)
+            catch
             {
+                // ignored
             }
         }
 
@@ -606,12 +631,9 @@ namespace YuoTools.Extend.Helper
         /// <returns></returns>
         public static void Delete(string[] files)
         {
-            if (!files.IsNullOrEmpty())
+            foreach (var file in files)
             {
-                foreach (var file in files)
-                {
-                    Delete(file);
-                }
+                Delete(file);
             }
         }
 
@@ -620,7 +642,7 @@ namespace YuoTools.Extend.Helper
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static long Size(string fileName)
+        public static long GetFileSize(string fileName)
         {
             long result = -1;
             if (File.Exists(fileName))
@@ -630,9 +652,34 @@ namespace YuoTools.Extend.Helper
                     FileInfo fi = new FileInfo(fileName);
                     result = fi.Length;
                 }
-                catch (Exception e)
+                catch
                 {
+                    // ignored
                 }
+            }
+
+            return result;
+        }
+
+        public static string FileSizeToString(long size)
+        {
+            string result = "";
+            if (size <= 0) return "未知大小";
+            if (size < 1024)
+            {
+                result = size + "B";
+            }
+            else if (size < 1024 * 1024)
+            {
+                result = (size / 1024.0).ToString("0.00") + "KB";
+            }
+            else if (size < 1024 * 1024 * 1024)
+            {
+                result = (size / 1024.0 / 1024.0).ToString("0.00") + "MB";
+            }
+            else
+            {
+                result = (size / 1024.0 / 1024.0 / 1024.0).ToString("0.00") + "GB";
             }
 
             return result;
@@ -648,7 +695,7 @@ namespace YuoTools.Extend.Helper
             long[] result = new long[files.Count];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = Size(files[i]);
+                result[i] = GetFileSize(files[i]);
             }
 
             return result;
@@ -662,7 +709,7 @@ namespace YuoTools.Extend.Helper
         /// <returns></returns>
         public static double Size(string fileName, string unit)
         {
-            return ByteConvertHelper.Cvt(Size(fileName), unit);
+            return ByteConvertHelper.Cvt(GetFileSize(fileName), unit);
         }
 
         /// <summary>
@@ -672,7 +719,7 @@ namespace YuoTools.Extend.Helper
         /// <returns></returns>
         public static string SizeFormat(string fileName)
         {
-            return ByteConvertHelper.Fmt(Size(fileName));
+            return ByteConvertHelper.Fmt(GetFileSize(fileName));
         }
 
         /// <summary>
@@ -698,8 +745,6 @@ namespace YuoTools.Extend.Helper
         /// <summary>
         /// 获取多个文件的MD5特征码
         /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
         public static string[] GetMD5(List<string> files)
         {
             string[] result = new string[files.Count];
@@ -711,25 +756,189 @@ namespace YuoTools.Extend.Helper
             return result;
         }
 
-        public static bool Copy(string sourceFileName, string destFileName, bool overwrite)
+        //获取文件编码格式
+        public static Encoding GetFileEncodeType(string filePath)
         {
-            if (File.Exists(sourceFileName))
+            Encoding encoding = Encoding.Default;
+            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            Byte[] buffer = br.ReadBytes(2);
+            if (buffer[0] >= 0xEF)
             {
-                string destPath = GetFilePath(destFileName);
-                if (Create(destPath))
+                //UTF-8
+                if (buffer[0] == 0xEF && buffer[1] == 0xBB)
                 {
-                    try
-                    {
-                        File.Copy(sourceFileName, destFileName, overwrite);
-                        return true;
-                    }
-                    catch
-                    {
-                    }
+                    encoding = Encoding.UTF8;
+                }
+                //Unicode
+                else if (buffer[0] == 0xFF && buffer[1] == 0xFE)
+                {
+                    return Encoding.Unicode;
+                }
+                //BigEndianUnicode
+                else if (buffer[0] == 0xFF && buffer[1] == 0xFE)
+                {
+                    encoding = Encoding.BigEndianUnicode;
+                }
+                //GBK
+                else if (buffer[0] == 0x84 && buffer[1] == 0x31)
+                {
+                    encoding = Encoding.GetEncoding("GBK");
+                }
+                //GB2312
+                else if (buffer[0] == 0x86 && buffer[1] == 0x30)
+                {
+                    encoding = Encoding.GetEncoding("GB2312");
+                }
+                //GB18030
+                else if (buffer[0] == 0x84 && buffer[1] == 0x31)
+                {
+                    encoding = Encoding.GetEncoding("GB18030");
+                }
+                //UTF-32
+                else if (buffer[0] == 0x00 && buffer[1] == 0x00)
+                {
+                    encoding = Encoding.UTF32;
+                }
+                //UTF-7
+                else if (buffer[0] == 0x2B && buffer[1] == 0x2F)
+                {
+                    encoding = Encoding.UTF7;
+                }
+                //ASCII
+                else if (buffer[0] == 0x00 && buffer[1] == 0x00)
+                {
+                    encoding = Encoding.ASCII;
+                }
+                else
+                {
+                    return Encoding.Default;
                 }
             }
 
-            return false;
+            br.Close();
+            fs.Close();
+            return encoding;
+        }
+
+        //获取文件夹下所有文件的编码格式
+        public static Encoding[] GetFilesEncodeType(string path)
+        {
+            List<string> files = GetAllFile(path);
+            Encoding[] encodings = new Encoding[files.Count];
+            for (int i = 0; i < files.Count; i++)
+            {
+                encodings[i] = GetFileEncodeType(files[i]);
+            }
+
+            return encodings;
+        }
+
+        //更改文件编码格式
+        public static void ChangeFileEncodeType(string filePath, Encoding encoding)
+        {
+            string content = File.ReadAllText(filePath, GetFileEncodeType(filePath));
+            File.WriteAllText(filePath, content, encoding);
+        }
+
+        /// <summary>
+        /// 判断文件类型
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string CheckFileType(string path)
+        {
+            List<string> imageType = new List<string>() { ".bmp", ".jpg", ".jpeg", ".png", ".gif", ".tiff", ".ico" };
+            List<string> videoType = new List<string>()
+            {
+                ".mp4", ".avi", ".wmv", ".rmvb", ".rm", ".flv", ".3gp", ".mkv", ".mov", ".mpg", ".mpeg", ".dat", ".asf",
+                ".asx", ".vob"
+            };
+            List<string> audioType = new List<string>()
+            {
+                ".mp3", ".wav", ".wma", ".aac", ".flac", ".ape", ".ogg", ".m4a", ".ac3", ".aiff", ".au", ".mp2", ".ra",
+                ".ram", ".mmf", ".amr", ".m4r", ".mka", ".m3u", ".wv"
+            };
+            List<string> documentType = new List<string>()
+            {
+                ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".txt", ".rtf", ".wps", ".et", ".dps",
+                ".html", ".htm", ".xml", ".mht", ".mhtml", ".chm", ".epub", ".md"
+            };
+            List<string> compressType = new List<string>()
+            {
+                ".zip", ".rar", ".7z", ".iso", ".cab", ".tar", ".gz", ".bz2", ".jar", ".ace", ".lzh", ".uue", ".arj",
+            };
+            List<string> executableType = new List<string>()
+            {
+                ".exe", ".msi", ".bat", ".cmd", ".com", ".cpl", ".dll", ".drv", ".scr", ".sys", ".vbs", ".wsf", ".jar",
+                ".apk"
+            };
+            List<string> psType = new List<string>() { ".psd", ".psb" };
+
+            if (IsFile(path))
+            {
+                string ex = Path.GetExtension(path);
+                if (imageType.Contains(ex))
+                {
+                    return "图片";
+                }
+                else if (videoType.Contains(ex))
+                {
+                    return "视频";
+                }
+                else if (audioType.Contains(ex))
+                {
+                    return "音频";
+                }
+                else if (documentType.Contains(ex))
+                {
+                    return "文档";
+                }
+                else if (compressType.Contains(ex))
+                {
+                    return "压缩包";
+                }
+                else if (executableType.Contains(ex))
+                {
+                    return "可执行文件";
+                }
+                else if (psType.Contains(ex))
+                {
+                    return "PS文件";
+                }
+                else
+                {
+                    switch (ex)
+                    {
+                        case ".max":
+                            return "3DMax文件";
+                        case ".unitypackage":
+                            return "Unity插件包";
+                        case ".unity":
+                            return "Unity场景文件";
+                        case ".fbx":
+                            return "FBX模型文件";
+                    }
+
+                    return "其他";
+                }
+            }
+            else
+            {
+                return "文件夹";
+            }
+        }
+
+        public static int GetFileLineCount(string s)
+        {
+            int count = 0;
+            using StreamReader sr = new StreamReader(s);
+            while (sr.ReadLine() != null)
+            {
+                count++;
+            }
+
+            return count;
         }
     }
 }

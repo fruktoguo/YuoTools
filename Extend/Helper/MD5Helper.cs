@@ -16,5 +16,6 @@ namespace YuoTools.Extend.Helper
 
             return retVal.ToHex("x2");
         }
+        
     }
 }

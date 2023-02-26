@@ -5,11 +5,16 @@ namespace YuoTools.Main.Ecs
 {
     public abstract class SystemBase
     {
-        public bool Enabled { get; private set; } = true;
+        public bool Enabled { get; set; } = true;
 
         public readonly List<YuoEntity> Entitys = new();
 
+        public Dictionary<YuoEntity, int> EntitysIndex = new();
+
         public int EntityCount => Entitys.Count;
+
+        public virtual string Name => Type.Name;
+        public virtual string Group => "";
 
         public double TimeConsuming { get; private set; }
 
@@ -32,9 +37,9 @@ namespace YuoTools.Main.Ecs
         public abstract void Init(World world);
 
         public abstract Type[] InfluenceTypes();
-        
+
         public Type Type { get; internal set; }
-        
+
         public Type RunType;
 
         internal void m_Run()
@@ -58,6 +63,12 @@ namespace YuoTools.Main.Ecs
 #endif
         }
 
+        internal virtual void Clear()
+        {
+            Entitys.Clear();
+            systemTags.Clear();
+        }
+
         internal abstract void m_Run(int entityIndex);
 
         internal void m_Run(YuoEntity entity)
@@ -78,46 +89,7 @@ namespace YuoTools.Main.Ecs
         internal abstract bool AddComponent(YuoEntity entity);
 
         internal abstract void RemoveComponent(YuoEntity entity);
+
+        public List<Type> systemTags = new List<Type>();
     }
-
-    #region interface
-
-    public interface ISystemTag
-    {
-    }
-
-    public interface IAwake : ISystemTag
-    {
-    }
-
-    public interface IUpdate : ISystemTag
-    {
-    }
-
-    public interface IFixedUpdate : ISystemTag
-    {
-    }
-
-    public interface IDestroy : ISystemTag
-    {
-    }
-
-    public interface IExitGame : ISystemTag
-    {
-    }
-
-    public interface ISwitchComponent : ISystemTag
-    {
-    }
-
-    public static class SystemType
-    {
-        public static readonly Type Awake = typeof(IAwake);
-        public static readonly Type Update = typeof(IUpdate);
-        public static readonly Type FixedUpdate = typeof(IFixedUpdate);
-        public static readonly Type Destroy = typeof(IDestroy);
-        public static readonly Type SwitchComponent = typeof(ISwitchComponent);
-    }
-
-    #endregion interface
 }

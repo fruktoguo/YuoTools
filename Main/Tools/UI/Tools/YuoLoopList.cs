@@ -10,37 +10,30 @@ namespace YuoTools
 {
     public class YuoLoopList<T> : SerializedMonoBehaviour
     {
-        [Header("大小")]
         /// <summary>
         /// 单元格尺寸（宽，高）
         /// </summary>
-        public Vector2 CellSize;
+        [Header("大小")] public Vector2 CellSize;
 
-        [HorizontalGroup("")]
-        [Header("缩放")]
         /// <summary>
         /// 单元格尺寸缩放
         /// </summary>
-        public Vector2 CellSizeScale = Vector2.one;
+        [HorizontalGroup("")] [Header("缩放")] public Vector2 CellSizeScale = Vector2.one;
 
-        [Header("间距")]
-        [HorizontalGroup("")]
         /// <summary>
         /// 单元格间隙（水平，垂直）
         /// </summary>
-        public Vector2 SpacingSize;
+        [Header("间距")] [HorizontalGroup("")] public Vector2 SpacingSize;
 
-        [Header("有多少列")]
         /// <summary>
         /// 列数
         /// </summary>
-        public int ColumnCount = 1;
+        [Header("有多少列")] public int ColumnCount = 1;
 
         /// <summary>
         /// 单元格渲染器prefab
         /// </summary>
-        [Header("预设体必须挂载YuoLoopListItem组件")]
-        public GameObject RenderGO;
+        [Header("预设体必须挂载YuoLoopListItem组件")] public GameObject RenderGO;
 
         /// <summary>
         /// 渲染格子数
@@ -50,32 +43,29 @@ namespace YuoTools
         /// <summary>
         /// 父节点蒙版尺寸
         /// </summary>
-        [HideInInspector]
-        public Vector2 mMaskSize;
+        [HideInInspector] public Vector2 mMaskSize;
 
-        [SerializeField]
         /// <summary>
         /// 蒙版矩形
         /// </summary>
-        private Rect mRectMask;
+        [SerializeField] private Rect mRectMask;
 
         public ScrollRect mScrollRect;
 
-        [HideInInspector]
         /// <summary>
         /// 转换器
         /// </summary>
-        public RectTransform mRectTransformContainer;
+        [HideInInspector] public RectTransform mRectTransformContainer;
 
-        [SerializeField]
         /// <summary>
         /// 渲染脚本集合
         /// </summary>
-        protected List<YuoLoopListItem<T>> mList_items = new List<YuoLoopListItem<T>>();
-        [SerializeField]
+        [SerializeField] protected List<YuoLoopListItem<T>> mList_items = new List<YuoLoopListItem<T>>();
+
         /// <summary>
         /// 渲染格子字典
         /// </summary>
+        [SerializeField]
         protected Dictionary<int, YuoLoopListRect> mDict_dRect = new Dictionary<int, YuoLoopListRect>();
 
         /// <summary>
@@ -99,7 +89,8 @@ namespace YuoTools
         /// <summary>
         /// 初始化渲染脚本
         /// </summary>
-        public virtual void InitRendererList(YuoLoopListItem<T>.OnSelect OnSelect = null, YuoLoopListItem<T>.OnUpdateData OnUpdate = null)
+        public virtual void InitRendererList(YuoLoopListItem<T>.OnSelect OnSelect = null,
+            YuoLoopListItem<T>.OnUpdateData OnUpdate = null)
         {
             if (mHasInited) return;
             //获得蒙版尺寸
@@ -121,13 +112,16 @@ namespace YuoTools
                 if (dfItem == null)
                     throw new Exception("Render must extend DynamicInfinityItem");
                 mList_items.Add(dfItem);
-                mList_items[i].DRect = new YuoLoopListRect(1 * GetBlockSizeX(), -i * GetBlockSizeY() - CellSize.y * CellSizeScale.y, CellSize.x * CellSizeScale.x, CellSize.y * CellSizeScale.y, i);
+                mList_items[i].DRect = new YuoLoopListRect(1 * GetBlockSizeX(),
+                    -i * GetBlockSizeY() - CellSize.y * CellSizeScale.y, CellSize.x * CellSizeScale.x,
+                    CellSize.y * CellSizeScale.y, i);
                 mList_items[i].DRect.Index = -1;
                 mList_items[i].OnSelectHandler = OnSelect;
                 mList_items[i].OnUpdateDataHandler = OnUpdate;
                 child.SetActive(false);
                 UpdateChildTransformPos(dfItem, i);
             }
+
             SetListRenderSize(mRendererCount.Clamp(mDataProviders.Count));
             mHasInited = true;
         }
@@ -164,6 +158,7 @@ namespace YuoTools
             {
                 size += item.y;
             }
+
             SetListRenderCustomSize(size);
             mDataProviders = datas;
             ClearAllListRenderDr();
@@ -187,13 +182,17 @@ namespace YuoTools
                 nowStartPos += mDict_dRect[i + 1].mRect.height;
                 // nowStartPos += rects[j].y;
                 size += rects[j].y;
-                YuoLoopListRect dRect = new YuoLoopListRect(GetBlockSizeX(), nowStartPos, rects[j].x, rects[j].y, mDataProviders.Count - 1 - k);
+                YuoLoopListRect dRect = new YuoLoopListRect(GetBlockSizeX(), nowStartPos, rects[j].x, rects[j].y,
+                    mDataProviders.Count - 1 - k);
                 mDict_dRect[i] = dRect;
             }
+
             nowStartPos += mDict_dRect[MinStart].mRect.height;
-            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x, mRectTransformContainer.sizeDelta.y + size);
+            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x,
+                mRectTransformContainer.sizeDelta.y + size);
             mRectTransformContainer.anchoredPosition = mRectTransformContainer.anchoredPosition.RAddY(nowStartPos);
-            mScrollRect.verticalNormalizedPosition = 1 - mRectTransformContainer.anchoredPosition.y / (mRectTransformContainer.sizeDelta.y - (mScrollRect.transform as RectTransform).sizeDelta.y);
+            mScrollRect.verticalNormalizedPosition = 1 - mRectTransformContainer.anchoredPosition.y /
+                (mRectTransformContainer.sizeDelta.y - (mScrollRect.transform as RectTransform).sizeDelta.y);
             foreach (var item in mList_items)
             {
                 if (item.gameObject.activeSelf)
@@ -202,6 +201,7 @@ namespace YuoTools
                     r.anchoredPosition = r.anchoredPosition.RSetY(item.DRect.mRect.position.y - nowStartPos);
                 }
             }
+
             UpdateRender();
         }
 
@@ -220,10 +220,13 @@ namespace YuoTools
                 YuoLoopListRect dRect = new YuoLoopListRect(GetBlockSizeX(), nowEndPos, rects[k].x, rects[k].y, i);
                 mDict_dRect[i] = dRect;
             }
+
             //nowEndPos += mDict_dRect[MinStart].mRect.height;
-            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x, mRectTransformContainer.sizeDelta.y + size);
+            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x,
+                mRectTransformContainer.sizeDelta.y + size);
             UpdateRender();
         }
+
         public void AddDataOnEnd(T data, Vector2 rect)
         {
             ColumnCount = 1;
@@ -233,9 +236,11 @@ namespace YuoTools
             nowEndPos -= rect.y;
             YuoLoopListRect dRect = new YuoLoopListRect(GetBlockSizeX(), nowEndPos, rect.x, rect.y, endTemp);
             mDict_dRect[endTemp] = dRect;
-            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x, mRectTransformContainer.sizeDelta.y + rect.y);
+            mRectTransformContainer.sizeDelta = new Vector2(mRectTransformContainer.sizeDelta.x,
+                mRectTransformContainer.sizeDelta.y + rect.y);
             UpdateRender();
         }
+
         /// <summary>
         /// 设置渲染列表的尺寸
         /// </summary>
@@ -257,7 +262,8 @@ namespace YuoTools
             {
                 int column = i % ColumnCount;
                 nowEndPos -= rects[i].y;
-                YuoLoopListRect dRect = new YuoLoopListRect(column * GetBlockSizeX(), nowEndPos, rects[i].x, rects[i].y, i);
+                YuoLoopListRect dRect =
+                    new YuoLoopListRect(column * GetBlockSizeX(), nowEndPos, rects[i].x, rects[i].y, i);
                 mDict_dRect[i] = dRect;
             }
         }
@@ -265,7 +271,8 @@ namespace YuoTools
         private void SetListRenderSize(int count)
         {
             mRectTransformContainer.sizeDelta =
-                new Vector2(mRectTransformContainer.sizeDelta.x, (Mathf.CeilToInt((count * 1.0f / ColumnCount)) * GetBlockSizeY()));
+                new Vector2(mRectTransformContainer.sizeDelta.x,
+                    (Mathf.CeilToInt((count * 1.0f / ColumnCount)) * GetBlockSizeY()));
             mRectMask = new Rect(0, -mMaskSize.y, mMaskSize.x, mMaskSize.y);
             // mScrollRect.vertical = mRectTransformContainer.sizeDelta.y > mMaskSize.y;
         }
@@ -295,7 +302,10 @@ namespace YuoTools
         /// 获得格子块尺寸
         /// </summary>
         /// <returns></returns>
-        protected float GetBlockSizeY() { return CellSize.y * CellSizeScale.y + SpacingSize.y; }
+        protected float GetBlockSizeY()
+        {
+            return CellSize.y * CellSizeScale.y + SpacingSize.y;
+        }
 
         protected float GetBlockSizeX()
         {
@@ -313,7 +323,9 @@ namespace YuoTools
             {
                 int row = i / ColumnCount;
                 int column = i % ColumnCount;
-                YuoLoopListRect dRect = new YuoLoopListRect(column * GetBlockSizeX(), -row * GetBlockSizeY() - CellSize.y * CellSizeScale.y, CellSize.x * CellSizeScale.x, CellSize.y * CellSizeScale.y, i);
+                YuoLoopListRect dRect = new YuoLoopListRect(column * GetBlockSizeX(),
+                    -row * GetBlockSizeY() - CellSize.y * CellSizeScale.y, CellSize.x * CellSizeScale.x,
+                    CellSize.y * CellSizeScale.y, i);
                 mDict_dRect[i] = dRect;
             }
         }
@@ -339,7 +351,10 @@ namespace YuoTools
         /// 获得数据提供者
         /// </summary>
         /// <returns></returns>
-        public IList GetDataProvider() { return mDataProviders; }
+        public IList GetDataProvider()
+        {
+            return mDataProviders;
+        }
 
         /// <summary>
         /// 数据发生变化 供外部调用刷新列表
@@ -385,6 +400,7 @@ namespace YuoTools
                 //child.SetActive(false);
                 UpdateChildTransformPos(dfItem, i);
             }
+
             SetListRenderSize(mDataProviders.Count);
         }
 
@@ -404,7 +420,8 @@ namespace YuoTools
             float target = index / ColumnCount / (float)((mDataProviders.Count - 1) / ColumnCount);
             target = 1 - target;
             target.Clamp();
-            mScrollRect.verticalNormalizedPosition.To(target, delay, x => { mScrollRect.verticalNormalizedPosition = x; });
+            mScrollRect.verticalNormalizedPosition.To(target, delay,
+                x => { mScrollRect.verticalNormalizedPosition = x; });
         }
 
         public virtual void LocateRenderItemAtIndex1(int index, float delay)
@@ -440,14 +457,14 @@ namespace YuoTools
                 {
                     vCur = Vector2.Lerp(pos, v2Pos, passedTime / delay);
                 }
+
                 mRectTransformContainer.anchoredPosition = vCur;
             }
         }
 
         #endregion 移动至数据
-        [SerializeField]
 
-        private Dictionary<int, YuoLoopListRect> inOverlaps = new Dictionary<int, YuoLoopListRect>();
+        [SerializeField] private Dictionary<int, YuoLoopListRect> inOverlaps = new Dictionary<int, YuoLoopListRect>();
         private int MinStart = 0;
 
         protected void UpdateRender()
@@ -456,8 +473,10 @@ namespace YuoTools
             inOverlaps.Clear();
             int Count = mDict_dRect.Count;
             Count.Clamp(mDataProviders.Count / ColumnCount.RClamp(1, ColumnCount));
-            int min = (int)(Count * (1 - mScrollRect.verticalNormalizedPosition) - ColumnCount * mRectMask.height / CellSize.y / CellSizeScale.y * 2);
-            int max = (int)(Count * (1 - mScrollRect.verticalNormalizedPosition) + ColumnCount * mRectMask.height / CellSize.y / CellSizeScale.y * 2);
+            int min = (int)(Count * (1 - mScrollRect.verticalNormalizedPosition) -
+                            ColumnCount * mRectMask.height / CellSize.y / CellSizeScale.y * 2);
+            int max = (int)(Count * (1 - mScrollRect.verticalNormalizedPosition) +
+                            ColumnCount * mRectMask.height / CellSize.y / CellSizeScale.y * 2);
             min += MinStart;
             max += MinStart;
             //print("min:" + min + " max:" + max + "minStart:" + MinStart + " mDict_dRect.Count:" + Count);
@@ -470,6 +489,7 @@ namespace YuoTools
                     inOverlaps.Add(mDict_dRect[i].Index, mDict_dRect[i]);
                 }
             }
+
             int len = mList_items.Count;
             for (int i = 0; i < len; ++i)
             {
@@ -477,6 +497,7 @@ namespace YuoTools
                 if (item.DRect != null && !inOverlaps.ContainsKey(item.DRect.Index))
                     item.DRect = null;
             }
+
             foreach (YuoLoopListRect dR in inOverlaps.Values)
             {
                 if (GetDynmicItem(dR) == null)
@@ -491,6 +512,7 @@ namespace YuoTools
                     }
                 }
             }
+
             inOverlaps.Clear();
         }
 
@@ -507,6 +529,7 @@ namespace YuoTools
                 if (item.DRect == null)
                     return item;
             }
+
             throw new Exception("Error");
         }
 
@@ -525,11 +548,13 @@ namespace YuoTools
                 {
                     continue;
                 }
+
                 if (rect.Index == item.DRect.Index)
                 {
                     return item;
                 }
             }
+
             return null;
         }
 
@@ -540,7 +565,8 @@ namespace YuoTools
             if (mHasInited)
             {
                 //如果没有运动.几帧后会停止刷新
-                if (!lastPos.x.ApEqual(mRectTransformContainer.anchoredPosition.x) || !lastPos.y.ApEqual(mRectTransformContainer.anchoredPosition.y))
+                if (!lastPos.x.ApEqual(mRectTransformContainer.anchoredPosition.x) ||
+                    !lastPos.y.ApEqual(mRectTransformContainer.anchoredPosition.y))
                 {
                     UpdateRender();
                     lastPos = Vector2.Lerp(lastPos, mRectTransformContainer.anchoredPosition, 0.9f);

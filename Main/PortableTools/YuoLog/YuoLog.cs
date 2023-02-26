@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace YuoTools
@@ -10,8 +11,12 @@ namespace YuoTools
         /// </summary>
         public static bool OpenDebug = true;
 
+        public static bool ShowTime = false;
+
         public const string ExtensionTagContains = "[yuolog]";
         public const string ExtensionTag = "[YuoLog]";
+
+        static string _mergeLog = "";
 
         private static string ColorRGBTo16(this Color color)
         {
@@ -21,9 +26,9 @@ namespace YuoTools
         private static string ColorFloat10To16(this float f)
         {
             if (f * 255 <= 16)
-                return $"0{System.Convert.ToString(Mathf.Clamp((int) (f * 255), 0, 255), 16)}";
+                return $"0{System.Convert.ToString(Mathf.Clamp((int)(f * 255), 0, 255), 16)}";
             else
-                return System.Convert.ToString(Mathf.Clamp((int) (f * 255), 0, 255), 16);
+                return System.Convert.ToString(Mathf.Clamp((int)(f * 255), 0, 255), 16);
         }
 
         private static string ColorInt10To16(this int i)
@@ -34,36 +39,65 @@ namespace YuoTools
                 return System.Convert.ToString(i, 16);
         }
 
+        /// <summary>
+        /// 组合Log,不输出,输出请调用MergeLogOutput
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T MergeLog<T>(this T obj)
+        {
+            if (!OpenDebug) return obj;
+            _mergeLog += obj;
+            return obj;
+        }
+
+        /// <summary>
+        /// 组合Log输出
+        /// </summary>
+        public static void MergeLogOutput()
+        {
+            if (!OpenDebug) return;
+            _mergeLog.Log();
+            _mergeLog = "";
+        }
+
         public static T Log<T>(this T obj)
         {
             if (!OpenDebug) return obj;
-            Debug.Log(obj);
+            Debug.Log(ShowTime
+                ? $"<color=#FFF00FF>[{DateTime.Now:mm:ss:fff}-{UnityEngine.Time.frameCount}]</color>"
+                : "" + obj);
             return obj;
         }
 
         public static T LogError<T>(this T obj)
         {
             if (!OpenDebug) return obj;
-            Debug.LogError(obj);
+            Debug.LogError(ShowTime
+                ? $"<color=#FFF00FF>[{DateTime.Now:mm:ss:fff}-{UnityEngine.Time.frameCount}]</color>"
+                : "" + obj);
             return obj;
         }
 
         public static T Log<T>(this T obj, string Color)
         {
             if (!OpenDebug) return obj;
-            Debug.Log(
-                $"{obj.ToString().LogSetBold().LogSetColor(Color)}");
+            Debug.Log(ShowTime
+                ? $"<color=#FFF00FF>[{DateTime.Now:mm:ss:fff}-{UnityEngine.Time.frameCount}]</color>"
+                : "" +
+                  $"{obj.ToString().LogSetBold().LogSetColor(Color)}");
             return obj;
         }
 
         public static List<T> LogAll<T>(this List<T> objs)
         {
             if (!OpenDebug) return objs;
-            $"该 {typeof(T).ToString().LogSetColor(YuoColorText.钢蓝)} 集合 的长度为 [{objs.Count.ToString().LogSetColor(YuoColorText.深粉色)}]"
+            $"该 {typeof(T).Name.LogSetColor(YuoColorText.钢蓝)} 集合 的长度为 [{objs.Count.ToString().LogSetColor(YuoColorText.深粉色)}]"
                 .Log();
             for (int i = 0; i < objs.Count; i++)
             {
-                $"第 [{(i + 1).ToString().LogSetColor(YuoColorText.深粉色)}] 个元素为 {objs[i].ToString().LogSetColor(YuoColorText.耐火砖)}"
+                $"第 [{(i + 1).ToString().LogSetColor(YuoColorText.深粉色)}] 个元素为 {objs[i].ToString().LogSetColor(YuoColorText.适中的紫罗兰红色)}"
                     .Log();
             }
 

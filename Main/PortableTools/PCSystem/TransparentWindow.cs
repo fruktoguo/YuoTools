@@ -68,8 +68,9 @@ public class TransparentWindow : SingletonMono<TransparentWindow>
 #endif
     }
 
-    private void Start()
+    private async void Start()
     {
+        await YuoWait.WaitTimeAsync(1);
         Init();
     }
 

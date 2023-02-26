@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine.Events;
@@ -16,7 +15,7 @@ namespace YuoTools
     [RequireComponent(typeof(Animator))]
     public class YuoAnima : SerializedMonoBehaviour
     {
-        public Animator animator { get; private set; }
+        public Animator Animator { get; private set; }
 
         [Required("无对应动画文件,点击创建")] [HorizontalGroup("动画信息")]
         public YuoAnimaScriptable animaScriptable;
@@ -45,6 +44,7 @@ namespace YuoTools
             else
             {
                 var eavc = GetComponent<Animator>().runtimeAnimatorController as AnimatorOverrideController;
+                if (eavc == null) return;
                 yas.Init(eavc);
                 if (GetComponent<Animator>().GetBehaviour<YuoStateMachineBehaviour>() == null)
                 {
@@ -72,9 +72,9 @@ namespace YuoTools
 
 #endif
 
-        [ReadOnly] private Dictionary<string, YuoAnimaItem> Animas = new Dictionary<string, YuoAnimaItem>();
+        [ReadOnly] private Dictionary<string, YuoAnimaItem> animas = new Dictionary<string, YuoAnimaItem>();
 
-        [ReadOnly] private Dictionary<int, string> HashToName = new Dictionary<int, string>();
+        [ReadOnly] private Dictionary<int, string> hashToName = new Dictionary<int, string>();
 
         [ReadOnly] public YuoAnimaItem NowAnima;
 
@@ -82,11 +82,11 @@ namespace YuoTools
 
         private void Awake()
         {
-            animator = GetComponent<Animator>();
+            Animator = GetComponent<Animator>();
             var data = Instantiate(animaScriptable);
-            Animas = data.Animas;
-            HashToName = data.HashToName;
-            YuoStateMachineBehaviour = animator.GetBehaviour<YuoStateMachineBehaviour>();
+            animas = data.Animas;
+            hashToName = data.HashToName;
+            YuoStateMachineBehaviour = Animator.GetBehaviour<YuoStateMachineBehaviour>();
             if (!YuoStateMachineBehaviour)
             {
                 Debug.LogError($"请在 [AnimatorController] 的 [layer] 中添加行为 [YuoStateMachineBehaviour] ");
@@ -95,27 +95,27 @@ namespace YuoTools
             YuoStateMachineBehaviour.Init(OnStateEnter, OnStateExit, OnStateMove, OnStateUpdate);
         }
 
-        public static bool IsUpdateMod = false;
+        public bool isUpdateMod;
 
         private void FixedUpdate()
         {
-            if (!IsUpdateMod)
-                mUpdate(Time.fixedTime);
+            if (!isUpdateMod)
+                MUpdate(Time.fixedTime);
         }
 
         private void Update()
         {
-            if (IsUpdateMod)
+            if (isUpdateMod)
             {
-                mUpdate(Time.deltaTime);
+                MUpdate(Time.deltaTime);
             }
         }
 
-        void mUpdate(float DeltaTime)
+        void MUpdate(float deltaTime)
         {
             if (NowAnima != null)
             {
-                foreach (var item in NowAnima.transitions)
+                foreach (var item in NowAnima.Transitions)
                 {
                     if (item.condition != null)
                     {
@@ -130,8 +130,8 @@ namespace YuoTools
 
             if (_lagTime > 0)
             {
-                animator.speed = animaSpeed * _lagPower;
-                _lagTime -= DeltaTime;
+                Animator.speed = animaSpeed * _lagPower;
+                _lagTime -= deltaTime;
                 if (_lagTime <= 0)
                 {
                     SetSpeed(animaSpeed);
@@ -144,7 +144,7 @@ namespace YuoTools
         public void SetSpeed(float speed)
         {
             animaSpeed = speed;
-            animator.speed = speed;
+            Animator.speed = speed;
         }
 
         /// <summary>
@@ -164,10 +164,10 @@ namespace YuoTools
         /// <summary>
         /// 播放动画
         /// </summary>
-        /// <param name="name"></param>
-        private void PlayAnima(string name)
+        /// <param name="animaName"></param>
+        private void PlayAnima(string animaName)
         {
-            animator.Play(name);
+            Animator.Play(animaName);
         }
 
         /// <summary>
@@ -177,23 +177,46 @@ namespace YuoTools
         /// <returns></returns>
         public string GetStateName(int hash)
         {
-            if (HashToName.ContainsKey(hash))
+            if (hashToName.ContainsKey(hash))
             {
-                return HashToName[hash];
+                return hashToName[hash];
             }
 
-            return "null";
+            return null;
         }
 
-        private void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        public string GetStateName(AnimatorStateInfo state)
         {
-            if (Animas.ContainsKey(HashToName[stateInfo.shortNameHash]))
+            return GetStateName(state.shortNameHash);
+        }
+
+        YuoAnimaItem GetAnimaItem(AnimatorStateInfo state)
+        {
+            return GetAnimaItem(GetStateName(state));
+        }
+
+        YuoAnimaItem GetAnimaItem(string animaName)
+        {
+            if (animas.ContainsKey(animaName))
             {
-                NowAnima = Animas[HashToName[stateInfo.shortNameHash]];
+                return animas[animaName];
+            }
+
+            return null;
+        }
+
+        private void OnStateEnter(Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            //print($"OnStateEnter  {HashToName[stateInfo.shortNameHash]}");
+
+            var clipName = GetStateName(stateInfo);
+            if (animas.TryGetValue(clipName, out var nowAnima))
+            {
+                if (animas.ContainsKey(clipName)) NowAnima = nowAnima;
                 foreach (var item in NowAnima.Events)
                 {
                     item.num = 0;
-                    if (item.eventType == AnimaEventType.enter)
+                    if (item.eventType == AnimaEventType.Enter)
                     {
                         item.num++;
                         item.action?.Invoke();
@@ -202,39 +225,62 @@ namespace YuoTools
             }
             else
             {
-                Debug.LogError($"{HashToName[stateInfo.shortNameHash]}  没有找到");
+                Debug.LogError($"{clipName}  没有找到");
             }
-            //print($"OnStateEnter  {HashToName[stateInfo.shortNameHash]}");
         }
 
-        private void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        private void OnStateExit(Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
         {
+            //print($"OnStateExit  {HashToName[stateInfo.shortNameHash]}");
+
             if (NowAnima == null) return;
-            foreach (var item in NowAnima.Events)
+            var clipName = GetStateName(stateInfo);
+            if (clipName == null || clipName != NowAnima.AnimaName) return;
+
+
+            var animaItem = GetAnimaItem(clipName);
+
+            UpdateAction(anima, stateInfo, layerIndex);
+
+            ExitAction(animaItem, anima, stateInfo, layerIndex);
+        }
+
+        void ExitAction(YuoAnimaItem animaItem, Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            foreach (var item in animaItem.Events)
             {
-                if (item.eventType == AnimaEventType.exit)
+                if (item.eventType == AnimaEventType.Exit)
                 {
                     item.num++;
                     item.action?.Invoke();
                 }
             }
-            //print($"OnStateExit  {HashToName[stateInfo.shortNameHash]}");
         }
 
-        private void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        private void OnStateMove(Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
         {
             //print($"OnStateMove  {HashToName[stateInfo.shortNameHash]}");
         }
 
-        private void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        private void OnStateUpdate(Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
         {
+            //print($"OnStateUpdate  {HashToName[stateInfo.shortNameHash]}");
+
             if (NowAnima == null) return;
+
+            if (GetStateName(stateInfo) != NowAnima.AnimaName) return;
+
+            UpdateAction(anima, stateInfo, layerIndex);
+        }
+
+        void UpdateAction(Animator anima, AnimatorStateInfo stateInfo, int layerIndex)
+        {
             foreach (var item in NowAnima.Events)
             {
                 switch (item.eventType)
                 {
-                    case AnimaEventType.once:
-                        if (item.num == 0 && stateInfo.normalizedTime > item.time)
+                    case AnimaEventType.Once:
+                        if (item.num == 0 && stateInfo.normalizedTime >= item.time)
                         {
                             item.num++;
                             item.action?.Invoke();
@@ -242,8 +288,10 @@ namespace YuoTools
 
                         break;
 
-                    case AnimaEventType.loop:
-                        if (stateInfo.normalizedTime > item.num && stateInfo.normalizedTime % 1 > item.time)
+                    case AnimaEventType.Loop:
+                        if ((stateInfo.normalizedTime > item.num && stateInfo.normalizedTime % 1 >= item.time) ||
+                            //防止动画速度过快的情况导致的事件不触发
+                            stateInfo.normalizedTime > item.num + 1)
                         {
                             item.num++;
                             item.action?.Invoke();
@@ -251,15 +299,11 @@ namespace YuoTools
 
                         break;
 
-                    case AnimaEventType.update:
+                    case AnimaEventType.Update:
                         item.action?.Invoke();
-                        break;
-
-                    default:
                         break;
                 }
             }
-            //print($"OnStateUpdate  {HashToName[stateInfo.shortNameHash]}");
         }
 
         public void AddTransition(string[] from, string to, BoolAction<YuoTransition> condition,
@@ -274,10 +318,10 @@ namespace YuoTools
         public void AddTransition(string from, string to, BoolAction<YuoTransition> condition,
             UnityAction onOver = null)
         {
-            if (Animas.ContainsKey(from) && Animas.ContainsKey(to))
+            if (animas.ContainsKey(from) && animas.ContainsKey(to))
             {
-                YuoTransition transition = new YuoTransition(animator, Animas[from], Animas[to]);
-                Animas[from].transitions.Add(transition);
+                YuoTransition transition = new YuoTransition(Animator, animas[from], animas[to]);
+                animas[from].Transitions.Add(transition);
                 transition.OnOver = onOver;
                 transition.condition = condition;
             }
@@ -289,23 +333,41 @@ namespace YuoTools
 
         #region 添加事件
 
+        public YuoAnimaEvent AddEvent(string clip, UnityAction action)
+        {
+            if (animas.ContainsKey(clip))
+            {
+                YuoAnimaEvent animaEvent = new YuoAnimaEvent()
+                {
+                    clip = animas[clip].Clip,
+                    action = action,
+                };
+                animas[clip].Events.Add(animaEvent);
+                return animaEvent;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// 添加事件在对应帧数
         /// </summary>
         /// <param name="clip"></param>
         /// <param name="frame"></param>
         /// <param name="action"></param>
-        public void AddEventOnFrame(string clip, int frame, UnityAction action,
-            AnimaEventType eventType = AnimaEventType.loop)
+        /// <param name="eventType"></param>
+        public YuoAnimaEvent AddEventOnFrame(string clip, int frame, UnityAction action,
+            AnimaEventType eventType = AnimaEventType.Loop)
         {
-            if (Animas.ContainsKey(clip))
+            if (animas.ContainsKey(clip))
             {
-                frame.Clamp((int) (Animas[clip].Clip.frameRate * Animas[clip].Clip.length));
-                AddEvent(clip, frame / Animas[clip].Clip.frameRate, action, eventType);
+                frame.Clamp((int)(animas[clip].Clip.frameRate * animas[clip].Clip.length));
+                return AddEvent(clip, frame / animas[clip].Clip.frameRate, action, eventType);
             }
             else
             {
                 Debug.LogError($"不存在【{clip}】动画");
+                return null;
             }
         }
 
@@ -315,68 +377,130 @@ namespace YuoTools
         /// <param name="clip"></param>
         /// <param name="time"></param>
         /// <param name="action"></param>
-        public void AddEvent(string clip, float time, UnityAction action,
-            AnimaEventType eventType = AnimaEventType.loop)
+        /// <param name="eventType"></param>
+        public YuoAnimaEvent AddEvent(string clip, float time, UnityAction action,
+            AnimaEventType eventType = AnimaEventType.Loop)
         {
-            if (Animas.ContainsKey(clip))
+            if (animas.ContainsKey(clip))
             {
                 YuoAnimaEvent animaEvent = new YuoAnimaEvent()
                 {
-                    clip = Animas[clip].Clip,
-                    time = (time / Animas[clip].Clip.length).RClamp(1),
+                    clip = animas[clip].Clip,
+                    time = (time / animas[clip].Clip.length).RClamp(1),
                     action = action,
                     eventType = eventType
                 };
-                Animas[clip].Events.Add(animaEvent);
+                animas[clip].Events.Add(animaEvent);
+                return animaEvent;
             }
             else
             {
                 Debug.LogError($"不存在【{clip}】动画");
+                return null;
             }
         }
 
-        public void AddEventRatio(string clip, float time, UnityAction action,
-            AnimaEventType eventType = AnimaEventType.loop)
+        /// <summary>
+        /// 添加事件在对应时间的百分比
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="time"></param>
+        /// <param name="action"></param>
+        /// <param name="eventType"></param>
+        /// <returns></returns>
+        public YuoAnimaEvent AddEventRatio(string clip, float time, UnityAction action,
+            AnimaEventType eventType = AnimaEventType.Loop)
         {
-            if (Animas.ContainsKey(clip))
+            if (animas.ContainsKey(clip))
             {
                 YuoAnimaEvent animaEvent = new YuoAnimaEvent()
                 {
-                    clip = Animas[clip].Clip,
+                    clip = animas[clip].Clip,
                     time = time,
                     action = action,
                     eventType = eventType
                 };
-                Animas[clip].Events.Add(animaEvent);
+                animas[clip].Events.Add(animaEvent);
+                return animaEvent;
             }
             else
             {
                 Debug.LogError($"不存在【{clip}】动画");
+                return null;
             }
         }
 
+        /// <summary>
+        /// 添加事件,会在该动画的每一帧执行
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public YuoAnimaEvent AddEventOnUpdate(string clip, UnityAction action)
+        {
+            var e = AddEvent(clip, action);
+            e.eventType = AnimaEventType.Update;
+            return e;
+        }
+
+        /// <summary>
+        ///  添加事件,会在该动画退出时执行
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public YuoAnimaEvent AddEventOnExit(string clip, UnityAction action)
+        {
+            var e = AddEvent(clip, action);
+            e.eventType = AnimaEventType.Exit;
+            return e;
+        }
+
+        /// <summary>
+        ///  添加事件,会在该动画进入时执行
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public YuoAnimaEvent AddEventOnEnter(string clip, UnityAction action)
+        {
+            var e = AddEvent(clip, action);
+            e.eventType = AnimaEventType.Enter;
+            return e;
+        }
+
+        /// <summary>
+        /// 走Unity自己的的动画事件系统
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="functionName"></param>
+        /// <param name="frame"></param>
+        /// <returns></returns>
         public AnimationEvent OnClipAddEventFrame(string clip, string functionName, int frame)
         {
-            if (Animas.ContainsKey(clip))
+            if (animas.ContainsKey(clip))
             {
-                frame.Clamp((int) (Animas[clip].Clip.frameRate * Animas[clip].Clip.length));
-                return OnClipAddEventTime(clip, functionName, frame / Animas[clip].Clip.frameRate);
+                frame.Clamp((int)(animas[clip].Clip.frameRate * animas[clip].Clip.length));
+                return OnClipAddEventTime(clip, functionName, frame / animas[clip].Clip.frameRate);
             }
 
             return null;
         }
 
+        /// <summary>
+        /// 走Unity自己的的动画事件系统
+        /// </summary>
         public AnimationEvent OnClipAddEventTime(string clip, string functionName, float time)
         {
-            if (Animas.ContainsKey(clip))
+            if (animas.ContainsKey(clip))
             {
-                time.Clamp(Animas[clip].Clip.length);
+                time.Clamp(animas[clip].Clip.length);
                 var ae = new AnimationEvent()
                 {
                     time = time,
                     functionName = functionName,
                 };
-                Animas[clip].Clip.AddEvent(ae);
+                animas[clip].Clip.AddEvent(ae);
                 return ae;
             }
             else
@@ -388,7 +512,7 @@ namespace YuoTools
 
         #endregion 添加事件
 
-        [System.Serializable]
+        [Serializable]
         public class YuoTransition
         {
             public Animator anima;
@@ -412,20 +536,20 @@ namespace YuoTools
 
             public AnimationClip Clip;
 
-            [HideInInspector] public UnityAction OnEnter;
+            public UnityAction OnEnter;
 
-            [ReadOnly] public List<YuoAnimaEvent> Events = new List<YuoAnimaEvent>();
+            [ReadOnly] public readonly List<YuoAnimaEvent> Events = new List<YuoAnimaEvent>();
 
-            [HideInInspector] public UnityAction OnExit;
+            public UnityAction OnExit;
 
-            public List<YuoTransition> transitions = new List<YuoTransition>();
+            public readonly List<YuoTransition> Transitions = new List<YuoTransition>();
             public float Speed = 1;
         }
 
-        [System.Serializable]
+        [Serializable]
         public class YuoAnimaEvent
         {
-            public AnimaEventType eventType = AnimaEventType.loop;
+            public AnimaEventType eventType = AnimaEventType.Loop;
             public float time;
             public AnimationClip clip;
             public UnityAction action;
@@ -434,11 +558,11 @@ namespace YuoTools
 
         public enum AnimaEventType
         {
-            loop = 0,
-            once = 1,
-            update = 2,
-            exit = 3,
-            enter = 4,
+            Loop = 0,
+            Once = 1,
+            Update = 2,
+            Exit = 3,
+            Enter = 4,
         }
     }
 }

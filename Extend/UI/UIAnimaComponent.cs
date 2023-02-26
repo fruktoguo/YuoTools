@@ -1,8 +1,6 @@
 ﻿using DG.Tweening;
 using ET;
-using Unity.VisualScripting;
 using UnityEngine;
-using YuoTools.ECS;
 using YuoTools.Extend.UI;
 using YuoTools.Main.Ecs;
 
@@ -10,11 +8,12 @@ namespace YuoTools.UI
 {
     public partial class UIAnimaComponent : YuoComponent
     {
+        public override string Name => "动画信息";
+
         public RectTransform rectTransform;
 
         public UISetting.UISate Sate;
 
-        /*---------------逻辑-------------*/
         private DOTweenAnimation animation;
 
         public async ETTask Open()
@@ -22,6 +21,7 @@ namespace YuoTools.UI
             if (animation)
             {
                 animation.DOPlayForward();
+
                 Sate = UISetting.UISate.ShowAnima;
                 await YuoWait.WaitTimeAsync(animation.duration);
             }
@@ -34,6 +34,7 @@ namespace YuoTools.UI
             if (animation)
             {
                 animation.DOPlayBackwards();
+
                 Sate = UISetting.UISate.HideAnima;
                 await YuoWait.WaitTimeAsync(animation.duration);
             }

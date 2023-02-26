@@ -8,7 +8,7 @@ namespace YuoTools.UI
         public override ETTask<GameObject> Load(string path, Transform parent)
         {
             var tcs = ETTask<GameObject>.Create(true);
-            tcs.SetResult(GameObject.Instantiate(Resources.Load<GameObject>(path), parent));
+            tcs.SetResult(Object.Instantiate(Resources.Load<GameObject>(path), parent));
             return tcs;
         }
     }

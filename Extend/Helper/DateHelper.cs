@@ -2,11 +2,12 @@
 
 namespace YuoTools.Extend.Helper
 {
+    [Obsolete("Obsolete")]
     public class DateHelper
     {
         public static DateTime Parse(float second)
         {
-            TimeSpan span = new TimeSpan((long) second * 10000000);
+            TimeSpan span = new TimeSpan((long)second * 10000000);
             DateTime baseTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             DateTime resultTime = baseTime.Add(span);
             return resultTime;
@@ -14,7 +15,7 @@ namespace YuoTools.Extend.Helper
 
         public static DateTime Parse(double second)
         {
-            TimeSpan span = new TimeSpan((long) second * 10000000);
+            TimeSpan span = new TimeSpan((long)second * 10000000);
             DateTime baseTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             DateTime resultTime = baseTime.Add(span);
             return resultTime;
@@ -105,7 +106,7 @@ namespace YuoTools.Extend.Helper
             {
                 DateTime begin = new DateTime(year, month, 1);
                 DateTime end = begin.AddMonths(1);
-                days = (int) (end - begin).TotalDays;
+                days = (int)(end - begin).TotalDays;
             }
             catch
             {

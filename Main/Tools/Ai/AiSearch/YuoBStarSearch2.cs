@@ -152,7 +152,7 @@ namespace YuoTools
         }
 
         /// <summary>
-        /// ²âÊÔÑ°Â·´ÎÊı
+        /// æµ‹è¯•å¯»è·¯æ¬¡æ•°
         /// </summary>
         public int num = 100;
 
@@ -209,15 +209,15 @@ namespace YuoTools
 
         private void Move(int NowX, int NowY, int NextX, int NextY, int EndX, int EndY, int index)
         {
-            //½áÊøÁË
+            //ç»“æŸäº†
             if (SearchEnd) return;
-            //³¬³ö·¶Î§µÄ
+            //è¶…å‡ºèŒƒå›´çš„
             if (!(NextX).InRange(0, MapSizeX - 1) || !(NextY).InRange(0, MapSizeY - 1)) return;
-            //ÒÑ¾­×ß¹ıµÄÂ·¾¶
+            //å·²ç»èµ°è¿‡çš„è·¯å¾„
             if (HasMoved(NextX, NextY)) return;
-            //Ç½Ìå,²»ÄÜÒÆ¶¯µÄ
+            //å¢™ä½“,ä¸èƒ½ç§»åŠ¨çš„
             if (!CanMove(NextX, NextY)) return;
-            //ÉèÖÃÒ»ÏÂÖµ
+            //è®¾ç½®ä¸€ä¸‹å€¼
             Map[NextX, NextY].InitGrid(Map[NowX, NowY]);
             Map[NowX, NowY].Tag1 = index;
             if (isEnd(NextX, NextY, EndX, EndY))
@@ -233,56 +233,56 @@ namespace YuoTools
 
         private void GoNext(int NowX, int NowY, int EndX, int EndY, int index)
         {
-            print("bËã·¨ÔËĞĞÁËÒ»´Î");
-            //Ğ£×¼·½Ïò
+            print("bç®—æ³•è¿è¡Œäº†ä¸€æ¬¡");
+            //æ ¡å‡†æ–¹å‘
             int addx = EndX <= NowX ? -1 : 1;
             int addy = EndY <= NowY ? -1 : 1;
             if (CanMove(NowX + addx, NowY))
             {
-                //Ä¬ÈÏÎªÍùÓÒ×ß,Êµ¼Ê»á¸ù¾İ·½ÏòĞ£×¼
-                //ÅĞ¶ÏÄÄ¸ö·½Ïò½ü
+                //é»˜è®¤ä¸ºå¾€å³èµ°,å®é™…ä¼šæ ¹æ®æ–¹å‘æ ¡å‡†
+                //åˆ¤æ–­å“ªä¸ªæ–¹å‘è¿‘
                 if ((EndY - NowY).RAbs() > (EndX - NowX).RAbs())
-                    Move(NowX, NowY, NowX, NowY + addy, EndX, EndY, index);  //ÍùÏÂ×ß
+                    Move(NowX, NowY, NowX, NowY + addy, EndX, EndY, index);  //å¾€ä¸‹èµ°
                 else
-                    Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index);  //ÍùÓÒ×ß
+                    Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index);  //å¾€å³èµ°
                 if (!CanMove(NowX, NowY + addy))
                 {
-                    //ÏÂ·½ÓĞÕÏ°­,×óÓÒ·ÖÁ½Ö§
-                    Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index);//ÍùÓÒ×ß
-                    Move(NowX, NowY, NowX - addx, NowY, EndX, EndY, index);////Íù×ó×ß
+                    //ä¸‹æ–¹æœ‰éšœç¢,å·¦å³åˆ†ä¸¤æ”¯
+                    Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index);//å¾€å³èµ°
+                    Move(NowX, NowY, NowX - addx, NowY, EndX, EndY, index);////å¾€å·¦èµ°
                 }
                 if (!CanMove(NowX + addx, NowY + addy))
                 {
-                    //ÓÒÏÂ·½ÓĞÕÏ°­
-                    //ÓÒÏÂ·ÖÁ½Ö§
+                    //å³ä¸‹æ–¹æœ‰éšœç¢
+                    //å³ä¸‹åˆ†ä¸¤æ”¯
                     Move(NowX, NowY, NowX, NowY + addy, EndX, EndY, index + 1);
                     Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index);
                 }
                 if (!CanMove(NowX - addx, NowY + addy))
                 {
-                    //×óÏÂ·½ÓĞÕÏ°­
-                    //×óÏÂ·ÖÁ½Ö§
+                    //å·¦ä¸‹æ–¹æœ‰éšœç¢
+                    //å·¦ä¸‹åˆ†ä¸¤æ”¯
                     Move(NowX, NowY, NowX, NowY + addy, EndX, EndY, index + 1);
                     Move(NowX, NowY, NowX - addx, NowY, EndX, EndY, index + 1);
                 }
                 if (!CanMove(NowX + addx, NowY - addy))
                 {
-                    //ÓÒÉÏ·½ÓĞÕÏ°­
-                    //ÓÒÉÏ·ÖÁ½Ö§
+                    //å³ä¸Šæ–¹æœ‰éšœç¢
+                    //å³ä¸Šåˆ†ä¸¤æ”¯
                     Move(NowX, NowY, NowX, NowY - addy, EndX, EndY, index + 1);
                     Move(NowX, NowY, NowX + addx, NowY, EndX, EndY, index + 1);
                 }
                 if (!CanMove(NowX - addx, NowY - addy))
                 {
-                    //×óÉÏ·½ÓĞÕÏ°­
-                    //×óÉÏ·ÖÁ½Ö§
+                    //å·¦ä¸Šæ–¹æœ‰éšœç¢
+                    //å·¦ä¸Šåˆ†ä¸¤æ”¯
                     Move(NowX, NowY, NowX, NowY - addy, EndX, EndY, index + 1);
                     Move(NowX, NowY, NowX - addx, NowY, EndX, EndY, index + 1);
                 }
             }
             else
             {
-                //ÓÒ·½ÓĞÕÏ°­,ÉÏÏÂ·ÖÁ½Ö§
+                //å³æ–¹æœ‰éšœç¢,ä¸Šä¸‹åˆ†ä¸¤æ”¯
                 Move(NowX, NowY, NowX, NowY + addy, EndX, EndY, index + 1);
                 Move(NowX, NowY, NowX, NowY - addy, EndX, EndY, index + 1);
             }

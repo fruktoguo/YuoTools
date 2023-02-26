@@ -41,6 +41,7 @@ namespace YuoTools
         private void OnEnable()
         {
             timer = -StartDelay;
+            Update();
         }
 
         private void Update()

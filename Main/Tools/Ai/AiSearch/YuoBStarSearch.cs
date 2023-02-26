@@ -116,7 +116,7 @@ namespace YuoTools
         }
 
         /// <summary>
-        /// ²âÊÔÑ°Â·´ÎÊı
+        /// æµ‹è¯•å¯»è·¯æ¬¡æ•°
         /// </summary>
         public int num = 1;
 
@@ -156,7 +156,7 @@ namespace YuoTools
 
                     return;
                 }
-                //²½½ø
+                //æ­¥è¿›
                 Count = BranchList.Count;
                 for (int j = 0; j < Count; j++)
                 {
@@ -205,7 +205,7 @@ namespace YuoTools
 
         [HideInInspector]
         /// <summary>
-        /// ËùÓĞµÄ·ÖÖ§
+        /// æ‰€æœ‰çš„åˆ†æ”¯
         /// </summary>
         public List<Branch> BranchList = new List<Branch>();
         void MoveTo(Branch branch, int x, int y)
@@ -234,78 +234,78 @@ namespace YuoTools
 
                 if (!CanMove(now.x + addx, now.y + addy))
                 {
-                    //ÓÒÏÂ²»ÄÜÒÆ¶¯ ÓÒÏÂ·ÖÁ½Ö§
-                    Move(branch, now.x, now.y + addy); //ÏÂ
-                    Move(branch, now.x + addx, now.y); //ÓÒ
+                    //å³ä¸‹ä¸èƒ½ç§»åŠ¨ å³ä¸‹åˆ†ä¸¤æ”¯
+                    Move(branch, now.x, now.y + addy); //ä¸‹
+                    Move(branch, now.x + addx, now.y); //å³
                 }
                 if (!CanMove(now.x + addx, now.y - addx))
                 {
-                    //ÓÒÉÏ²»ÄÜÒÆ¶¯ ÓÒÉÏ·ÖÁ½Ö§
-                    Move(branch, now.x + addx, now.y); //ÓÒ
-                    Move(branch, now.x, now.y - addy); //ÉÏ
+                    //å³ä¸Šä¸èƒ½ç§»åŠ¨ å³ä¸Šåˆ†ä¸¤æ”¯
+                    Move(branch, now.x + addx, now.y); //å³
+                    Move(branch, now.x, now.y - addy); //ä¸Š
                 }
                 if (!CanMove(now.x - addx, now.y + addy))
                 {
-                    //×óÏÂ²»ÄÜÒÆ¶¯ ×óÏÂ·ÖÁ½Ö§
-                    Move(branch, now.x, now.y + addy); //ÏÂ
-                    Move(branch, now.x - addx, now.y); //×ó
+                    //å·¦ä¸‹ä¸èƒ½ç§»åŠ¨ å·¦ä¸‹åˆ†ä¸¤æ”¯
+                    Move(branch, now.x, now.y + addy); //ä¸‹
+                    Move(branch, now.x - addx, now.y); //å·¦
                 }
                 if (!CanMove(now.x - addx, now.y - addy))
                 {
-                    //×óÉÏ²»ÄÜÒÆ¶¯ ×óÉÏ·ÖÁ½Ö§
-                    Move(branch, now.x, now.y - addy); //ÉÏ
-                    Move(branch, now.x - addx, now.y); //×ó
+                    //å·¦ä¸Šä¸èƒ½ç§»åŠ¨ å·¦ä¸Šåˆ†ä¸¤æ”¯
+                    Move(branch, now.x, now.y - addy); //ä¸Š
+                    Move(branch, now.x - addx, now.y); //å·¦
                 }
                 if (!CanMove(now.x, now.y + addy) && !CanMove(now.x, now.y + addy))
                 {
-                    //ÉÏÏÂ²»ÄÜÒÆ¶¯ ×óÓÒ·ÖÁ½Ö§
-                    Move(branch, now.x + addx, now.y); //ÓÒ
-                    Move(branch, now.x - addx, now.y); //×ó
+                    //ä¸Šä¸‹ä¸èƒ½ç§»åŠ¨ å·¦å³åˆ†ä¸¤æ”¯
+                    Move(branch, now.x + addx, now.y); //å³
+                    Move(branch, now.x - addx, now.y); //å·¦
                 }
                 if (MainBranch)
                 {
-                    //ÏëÒª²»Ì«ÌùÇ½¾Í°ÑÕâ¸öreturnÈ¥µô
+                    //æƒ³è¦ä¸å¤ªè´´å¢™å°±æŠŠè¿™ä¸ªreturnå»æ‰
                     return;
                 }
-                //Ã»ÓĞÈÎºÎ¹Õ½Ç,¼ÌĞø×ß
+                //æ²¡æœ‰ä»»ä½•æ‹è§’,ç»§ç»­èµ°
                 if (((now.x - branch.Endx).RAbs() > (now.y - branch.Endy).RAbs()))
-                    Move(branch, now.x, now.y + addy); //ÏÂ
+                    Move(branch, now.x, now.y + addy); //ä¸‹
                 else
-                    Move(branch, now.x + addx, now.y); //ÓÒ
+                    Move(branch, now.x + addx, now.y); //å³
             }
             else
             {
                 if (!CanMove(now.x, now.y + addy) && !CanMove(now.x, now.y + addy))
                 {
-                    //ÉÏÏÂ²»ÄÜÒÆ¶¯ ×óÓÒ·ÖÁ½Ö§
-                    Move(branch, now.x + addx, now.y); //ÓÒ
-                    Move(branch, now.x - addx, now.y); //×ó
+                    //ä¸Šä¸‹ä¸èƒ½ç§»åŠ¨ å·¦å³åˆ†ä¸¤æ”¯
+                    Move(branch, now.x + addx, now.y); //å³
+                    Move(branch, now.x - addx, now.y); //å·¦
                 }
                 else
                 {
-                    //ÄÜÒÆ¶¯¾ÍÉÏÏÂ·ÖÁ½Ö§
-                    Move(branch, now.x, now.y + addy); //ÏÂ
-                    Move(branch, now.x, now.y - addy); //ÉÏ
+                    //èƒ½ç§»åŠ¨å°±ä¸Šä¸‹åˆ†ä¸¤æ”¯
+                    Move(branch, now.x, now.y + addy); //ä¸‹
+                    Move(branch, now.x, now.y - addy); //ä¸Š
                 }
             }
 
             void Move(Branch branch, int x, int y)
             {
-                //½áÊøÁË
+                //ç»“æŸäº†
                 if (SearchEnd) return;
-                //³¬³ö·¶Î§µÄ
+                //è¶…å‡ºèŒƒå›´çš„
                 if (!(x).InRange(0, MapSizeX - 1) || !(y).InRange(0, MapSizeY - 1)) return;
-                //ÒÑ¾­×ß¹ıµÄÂ·¾¶
+                //å·²ç»èµ°è¿‡çš„è·¯å¾„
                 if (HasMoved(x, y)) return;
-                //Ç½Ìå,²»ÄÜÒÆ¶¯µÄ
+                //å¢™ä½“,ä¸èƒ½ç§»åŠ¨çš„
                 if (!CanMove(x, y)) return;
-                //Èç¹ûÖ÷·ÖÖ§Ã»ÓĞ±»Ê¹ÓÃ
+                //å¦‚æœä¸»åˆ†æ”¯æ²¡æœ‰è¢«ä½¿ç”¨
                 if (!MainBranch)
                 {
                     MainBranch = true;
                     MoveTo(branch, x, y);
                 }
-                //Ê¹ÓÃÁË¾Í´´½¨Ò»¸öĞÂµÄ·ÖÖ§
+                //ä½¿ç”¨äº†å°±åˆ›å»ºä¸€ä¸ªæ–°çš„åˆ†æ”¯
                 else
                 {
                     var bt = branchPools.GetItem(branch);
@@ -321,7 +321,7 @@ namespace YuoTools
                 return false;
             return Map[x, y].CanMove;
         }
-        #region ÀàĞÍ
+        #region ç±»å‹
         public class BranchPools
         {
             private List<Branch> Actives = new List<Branch>();
@@ -336,17 +336,17 @@ namespace YuoTools
                 }
                 else
                 {
-                    $"ÒªÒÆ³ıµÄÎïÌå [{item}] ²»ÊôÓÚ¸Ã¶ÔÏó³Ø".Log("#ff0000");
+                    $"è¦ç§»é™¤çš„ç‰©ä½“ [{item}] ä¸å±äºè¯¥å¯¹è±¡æ± ".Log("#ff0000");
                 }
             }
 
             /// <summary>
-            /// ÁÙÊ±±äÁ¿
+            /// ä¸´æ—¶å˜é‡
             /// </summary>
             private Branch ItemTemp;
 
             /// <summary>
-            /// »ñÈ¡Ò»¸öitem
+            /// è·å–ä¸€ä¸ªitem
             /// </summary>
             /// <returns></returns>
             public Branch GetItem(Branch parent)
@@ -366,7 +366,7 @@ namespace YuoTools
             }
 
             /// <summary>
-            /// ´´½¨ĞÂµÄitem
+            /// åˆ›å»ºæ–°çš„item
             /// </summary>
             /// <returns></returns>
             public Branch CreatItem()
@@ -377,7 +377,7 @@ namespace YuoTools
         public class Branch
         {
             /// <summary>
-            /// ÕâÌõ·ÖÖ§µÄÂ·¾¶
+            /// è¿™æ¡åˆ†æ”¯çš„è·¯å¾„
             /// </summary>
             public List<YuoGrid> Path;
             public int Endx;
@@ -416,7 +416,7 @@ namespace YuoTools
             public int x;
             public int y;
             /// <summary>
-            /// ÏÔÊ¾µÄÊ±ºò±ê¼ÇÓÃµÄ,¿ÉÒÔÉ¾
+            /// æ˜¾ç¤ºçš„æ—¶å€™æ ‡è®°ç”¨çš„,å¯ä»¥åˆ 
             /// </summary>
             public bool Tag;
             public bool CanMove;

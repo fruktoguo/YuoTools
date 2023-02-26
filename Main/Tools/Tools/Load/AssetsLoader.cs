@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.U2D;
-
 using System.IO;
-
 using UnityEngine.AddressableAssets;
 
 namespace YuoTools
@@ -25,6 +22,7 @@ namespace YuoTools
                 Instance.AllPools.Add(name, new PoolItem(name, MaxPoolCount));
                 //$"创建了个新的池子<{name}>".Log();
             }
+
             if (Instance.AllPools[name].Pools.Count > 0)
             {
                 Instance.AllPools[name].Pools[0].ResetTrans();
@@ -59,8 +57,13 @@ namespace YuoTools
             {
                 Addressables.LoadAssetAsync<Sprite>(name).Completed += x =>
                 {
-                    //Instance.Sprites.Add(name, Sprite.Create(x.Result, new Rect(0, 0, x.Result.width, x.Result.height), new Vector2(0.5f, 0.5f)));
-                    Instance.Sprites.Add(name, x.Result);
+                    //Get.Sprites.Add(name, Sprite.Create(x.Result, new Rect(0, 0, x.Result.width, x.Result.height), new Vector2(0.5f, 0.5f)));
+
+                    if (!Instance.Sprites.ContainsKey(name))
+                    {
+                        Instance.Sprites.Add(name, x.Result);
+                    }
+
                     Completed?.Invoke(Instance.Sprites[name]);
                     if (!Save)
                     {
@@ -92,6 +95,7 @@ namespace YuoTools
                             Instance.Sprites.Add(item.name, item);
                         }
                     }
+
                     Completed?.Invoke(Instance.Sprites[$"{SpriteAtlasName}_{SpriteName}"]);
                 };
             }
@@ -118,11 +122,17 @@ namespace YuoTools
         }
 
 #endif
+        public Dictionary<string, float> LoadProgress = new();
 
-        //public static async string LoadFileAsync(string path)
-        //{
-        //    return await File.ReadAllTextAsync(path);
-        //}
+        public void StartProgress(string s, float progress)
+        {
+            LoadProgress.TryAdd(s, progress);
+        }
+        
+        public void EndProgress(string s)
+        {
+            LoadProgress.Remove(s);
+        }
 
         public static byte[] Load(string path)
         {

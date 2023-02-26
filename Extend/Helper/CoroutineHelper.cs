@@ -3,6 +3,7 @@ using System.Collections;
 using ET;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace YuoTools.Extend.Helper
@@ -57,5 +58,111 @@ namespace YuoTools.Extend.Helper
 
             task.SetResult(enumerator);
         }
+
+        public delegate T YuoAction<out T>() where T : class;
+
+        public static async ETTask WaitToNonempty<T>(YuoAction<T> obj) where T : class
+        {
+            int timeOut = 10000;
+            while (obj?.Invoke() == null && timeOut-- > 0)
+            {
+                await YuoWait.WaitFrameAsync();
+            }
+        }
+
+        #region Unity回调
+
+        //onDisable
+        public static ETTask WaitOnDisable(this GameObject go)
+        {
+            return AwaitOnDisable.Create(go);
+        }
+
+        private class AwaitOnDisable : MonoBehaviour
+        {
+            private ETTask _tcs;
+
+            public static ETTask Create(GameObject go)
+            {
+                var tcs = ETTask.Create();
+                go.AddComponent<AwaitOnDisable>()._tcs = tcs;
+                return tcs;
+            }
+
+            private void OnDisable()
+            {
+                _tcs.SetResult();
+                _tcs = null;
+                Destroy(this);
+            }
+        }
+
+        //onDestroy
+        public static ETTask WaitOnDestroy(this GameObject go)
+        {
+            return AwaitOnDestroy.Create(go);
+        }
+
+        private class AwaitOnDestroy : MonoBehaviour
+        {
+            private ETTask _tcs;
+
+            public static ETTask Create(GameObject go)
+            {
+                var tcs = ETTask.Create();
+                go.AddComponent<AwaitOnDestroy>()._tcs = tcs;
+                return tcs;
+            }
+
+            private void OnDestroy()
+            {
+                _tcs.SetResult();
+                _tcs = null;
+            }
+        }
+
+        //onEnable
+        public static ETTask WaitOnEnable(this GameObject go)
+        {
+            return AwaitOnEnable.Create(go);
+        }
+
+        private class AwaitOnEnable : MonoBehaviour
+        {
+            private ETTask _tcs;
+
+            public static ETTask Create(GameObject go)
+            {
+                var tcs = ETTask.Create();
+                go.AddComponent<AwaitOnEnable>()._tcs = tcs;
+                return tcs;
+            }
+
+            private void OnEnable()
+            {
+                _tcs.SetResult();
+                _tcs = null;
+                Destroy(this);
+            }
+        }
+
+        #endregion
+
+        #region Button
+
+        public static ETTask WaitOnClick(this Button button)
+        {
+            var tcs = ETTask.Create();
+            button.onClick.AddListener(OnClick);
+            return tcs;
+
+            void OnClick()
+            {
+                tcs.SetResult();
+                button.onClick.RemoveListener(OnClick);
+            }
+        }
+
+        #endregion
     }
 }

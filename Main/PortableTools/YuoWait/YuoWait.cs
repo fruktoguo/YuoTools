@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ET;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace YuoTools
 {
@@ -17,7 +19,7 @@ namespace YuoTools
         /// <returns></returns>
         public static WaitForSeconds WaitTime(float time = 1)
         {
-            Temp.Int = (int) (time * 1000);
+            Temp.Int = (int)(time * 1000);
             if (!waits.ContainsKey(Temp.Int))
             {
                 waits.Add(Temp.Int, new WaitForSeconds(time));
@@ -36,7 +38,7 @@ namespace YuoTools
         /// <returns></returns>
         public static WaitForSecondsRealtime WaitUnscaledTime(float time = 1)
         {
-            Temp.Int = (int) (time * 1000);
+            Temp.Int = (int)(time * 1000);
             if (!waitsRealtime.ContainsKey(Temp.Int))
             {
                 waitsRealtime.Add(Temp.Int, new WaitForSecondsRealtime(time));
@@ -54,6 +56,12 @@ namespace YuoTools
         {
             await YuoAwait_Mono.Instance.WaitTimeAsync(waitTime);
         }
+
+        public static async ETTask WaitFrameAsync(int frame = 1)
+        {
+            await YuoAwait_Mono.Instance.WaitFrameAsync(frame);
+        }
+        
 
         /// <summary>
         /// 用于await延迟--->无缩放

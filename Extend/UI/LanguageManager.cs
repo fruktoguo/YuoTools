@@ -46,7 +46,7 @@ public class LanguageManager : SingletonMono<LanguageManager>
             return;
         }
         //LanTemp = JsonUtility.FromJson<Language>(File.ReadAllText(FilePath(lanType.ToString())));
-        LanTemp = YuoJson.Load<Language>($"Language/{lanType}.json");
+        LanTemp = YuoJsonHelper.Load<Language>($"Language/{lanType}.json");
         language.Clear();
         foreach (var item in LanTemp.datas)
         {
@@ -58,7 +58,7 @@ public class LanguageManager : SingletonMono<LanguageManager>
     private void SaveData()
     {
         LanTemp.LanguageType = lanType.ToString();
-        YuoJson.Save($"Language/{lanType}.json", LanTemp);
+        YuoJsonHelper.Save($"Language/{lanType}.json", LanTemp);
         //string str = JsonUtility.ToJson(LanTemp);
         //FileStream fileStream = new FileStream(FilePath(lanType.ToString()), FileMode.Create, FileAccess.Write);//创建写入文件
         //StreamWriter sw = new StreamWriter(fileStream);

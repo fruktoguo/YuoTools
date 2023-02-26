@@ -1,17 +1,13 @@
-using System;
 using System.Threading.Tasks;
 using ET;
 using UnityEngine;
 using YuoTools.ECS;
+using YuoTools.Extend;
 using YuoTools.Extend.UI;
 using YuoTools.Main.Ecs;
-using static YuoTools.Extend.UI.UISetting;
-using Object = UnityEngine.Object;
 
 namespace YuoTools.UI
 {
-    //这个其实属于system,但是因为扩展方法必须是public,想用就得写个友元类,所以采用分布类
-    // system文件里面的组件类都属于system
     public partial class UIManagerComponent
     {
         public async Task<UIComponent> Open(string winName, GameObject go = null)
@@ -19,10 +15,68 @@ namespace YuoTools.UI
             UIComponent component = Get(winName) ?? await AddWindow(winName, go);
 
             if (!OpenItems.Contains(component)) OpenItems.Add(component);
+            // else
+            // {
+            //     Debug.LogWarning($"{winName} is already open");
+            //     return component;
+            // }
+
+            if (component.AutoShow) component.rectTransform.gameObject.Show();
+
+            if (component.ModuleUI)
+            {
+                if (!ModuleUiItems.Contains(component))
+                {
+                    ModuleUiItems.Add(component);
+                    component.AddComponent<TopViewComponent>();
+                }
+
+                component.rectTransform.SetAsLastSibling();
+            }
             else
             {
-                Debug.LogWarning($"{winName} is already open");
+                component.SetWindowLayer(Transform.childCount - 1 - ModuleUiItems.Count);
+            }
+
+            if (!component.DefShow)
+            {
+                component.rectTransform.gameObject.Hide();
+                component.DefShow = true;
                 return component;
+            }
+
+            if (component.rectTransform.gameObject.activeSelf) RunSystemAndChild<IUIOpen>(component);
+            else
+                World.RunSystem<IUIOpen>(component);
+
+            if (!component.ModuleUI) TopView = component;
+
+            if (component.TryGetComponent<UIAnimaComponent>(out var anima))
+            {
+                World.RunSystem<IUIOpen>(anima);
+                await anima.Open();
+            }
+
+            return component;
+        }
+
+        public async ETTask<T> Open<T>() where T : UIComponent
+        {
+            if (UiItemsType.ContainsKey(typeof(T)))
+                return await Open(UiItemsType[typeof(T)].ViewName) as T;
+            else
+            {
+                Debug.LogError($"UIManagerComponent Open<T> error,not find {typeof(T)}");
+                return null;
+            }
+        }
+
+        public async void Open<T>(T component) where T : UIComponent
+        {
+            if (!OpenItems.Contains(component)) OpenItems.Add(component);
+            else
+            {
+                return;
             }
 
             if (component.AutoShow) component.rectTransform.gameObject.Show();
@@ -42,29 +96,24 @@ namespace YuoTools.UI
                 component.SetWindowLayer(Transform.childCount - 1 - ModuleUiItems.Count);
             }
 
+            if (!component.DefShow)
+            {
+                component.rectTransform.gameObject.Hide();
+                component.DefShow = true;
+                return;
+            }
+
             if (component.rectTransform.gameObject.activeSelf) RunSystemAndChild<IUIOpen>(component);
             else
-                World.Instance.RunSystemOfTag<IUIOpen>(component);
+                World.RunSystem<IUIOpen>(component);
 
             if (!component.ModuleUI) TopView = component;
 
             if (component.TryGetComponent<UIAnimaComponent>(out var anima))
             {
-                World.Instance.RunSystemOfTag<IUIOpen>(anima);
+                World.RunSystem<IUIOpen>(anima);
                 await anima.Open();
             }
-
-            return component;
-        }
-
-        public async Task<T> Open<T>(string winName) where T : UIComponent
-        {
-            return await Open(winName) as T;
-        }
-
-        public async void OpenWindow(string winName)
-        {
-            await Open(winName);
         }
 
         async Task<UIComponent> AddWindow(string winName, GameObject go = null)
@@ -79,10 +128,11 @@ namespace YuoTools.UI
             //生成窗口
             var component =
                 World.Main.GetComponent<UIManagerComponent>().Entity
-                    .AddChild(type, IDGenerater.GetID(winName)) as UIComponent;
+                    .AddChild(type, IDGenerate.GetID(winName)) as UIComponent;
             if (component == null) return null;
 
             component.Connect<UIComponent>();
+            component.AddComponent<UIAutoExitComponent>();
 
             if (go == null) go = await Create(winName);
 
@@ -95,6 +145,7 @@ namespace YuoTools.UI
                 component.Entity.AddComponent<UIAnimaComponent>().From(uiSetting);
                 component.ModuleUI = uiSetting.ModuleUI;
                 go.SetActive(uiSetting.Active);
+                component.DefShow = uiSetting.Active;
                 Object.Destroy(uiSetting);
             }
 
@@ -106,9 +157,21 @@ namespace YuoTools.UI
             if (BaseIndex == -1) BaseIndex = go.transform.GetSiblingIndex();
 
             //调用这个窗口的初始化系统
-            World.Instance.RunSystemOfTagType(SystemType.UICreate, component.Entity);
+            component.Entity.EntityName = "View_" + component.ViewName;
+
+            World.RunSystem<IUICreate>(component.Entity);
 
             return component;
+        }
+
+        public void Close<T>() where T : UIComponent
+        {
+            if (UiItemsType.ContainsKey(typeof(T)))
+                Close(UiItemsType[typeof(T)].ViewName);
+            else
+            {
+                Debug.LogError($"UIManagerComponent Close<T> error,not find {typeof(T)}");
+            }
         }
 
         public async void Close(string winName)
@@ -120,9 +183,9 @@ namespace YuoTools.UI
                 return;
             }
 
-            if (component.TryGetComponent<UIAnimaComponent>(out var anima))
+            if (component.DefShow && component.TryGetComponent<UIAnimaComponent>(out var anima))
             {
-                World.Instance.RunSystemOfTag<IUIClose>(anima);
+                World.RunSystem<IUIClose>(anima);
                 await anima.Close();
             }
 
@@ -130,7 +193,7 @@ namespace YuoTools.UI
             if (component.ModuleUI && ModuleUiItems.Contains(component)) ModuleUiItems.Remove(component);
             if (component.rectTransform.gameObject.activeSelf) RunSystemAndChild<IUIClose>(component);
             if (OpenItems.Contains(component)) OpenItems.Remove(component);
-            TopView = OpenItems.Count > 0 ? OpenItems[^1] : null;
+            if (!component.ModuleUI) TopView = OpenItems.Count > 0 ? OpenItems[^1] : null;
         }
 
         public void CloseAll()
@@ -163,9 +226,9 @@ namespace YuoTools.UI
             return UiItems.ContainsKey(winName) ? UiItems[winName] : null;
         }
 
-        public UIComponent Get<T>() where T : UIComponent
+        public T Get<T>() where T : UIComponent
         {
-            return UiItemsType.ContainsKey(typeof(T)) ? UiItemsType[typeof(T)] : null;
+            return UiItemsType.ContainsKey(typeof(T)) ? UiItemsType[typeof(T)] as T : null;
         }
 
         ETTask<GameObject> Create(string winName)
@@ -199,8 +262,8 @@ namespace YuoTools.UI
 
         void RunSystemAndChild<T>(UIComponent component) where T : ISystemTag
         {
-            World.Instance.RunSystemOfTag<T>(component);
-            World.Instance.RunSystemOfTag<T>(component.Entity.GetAllChild());
+            World.RunSystem<T>(component);
+            World.RunSystem<T>(component.Entity.Children);
         }
     }
 
@@ -214,6 +277,8 @@ namespace YuoTools.UI
 
     public class UIManagerSystem : YuoSystem<UIManagerComponent>, IAwake
     {
+        public override string Group => "MainUI";
+
         protected override void Run(UIManagerComponent component)
         {
             //初始化加载系统
@@ -235,10 +300,30 @@ namespace YuoTools.UI
 
     public class UIItemOpenSystem : YuoSystem<UIComponent>, IUIOpen
     {
+        public override string Group => "MainUI";
+
         protected override void Run(UIComponent component)
         {
             component.SetWindowLayer(World.Main.GetComponent<UIManagerComponent>().WindowCount);
             component.rectTransform.gameObject.Show();
+        }
+    }
+
+    public class UIAutoExitComponent : YuoComponent
+    {
+        public override string Name => "场景切换时自动销毁";
+    }
+
+    /// <summary>
+    /// 切换场景时清理UI
+    /// </summary>
+    public class UIAutoExitSystem : YuoSystem<UIAutoExitComponent>, ISceneExit
+    {
+        public override string Group => "MainUI";
+
+        protected override void Run(UIAutoExitComponent component)
+        {
+            component.Entity.Destroy();
         }
     }
 }

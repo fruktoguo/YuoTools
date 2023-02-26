@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using YuoTools.ECS;
 
 namespace YuoTools.Main.Ecs
@@ -9,40 +10,47 @@ namespace YuoTools.Main.Ecs
         public YuoEntity Parent { get; private set; }
 
         public EntityComponent EntityData { get; private set; }
-
-        public Dictionary<Type, YuoComponent> Components { get; private set; }
-
-        public MultiMap<Type, YuoComponent> ChildComponents { get; private set; }
-
-        public List<YuoEntity> Children { get; private set; }
-
+        [SerializeField] public Dictionary<Type, YuoComponent> Components { get; private set; }
+        [SerializeField] public MultiMap<Type, YuoComponent> ChildComponents { get; private set; }
+        [SerializeField] public List<YuoEntity> Children { get; private set; }
 
         public YuoEntity()
         {
             Components = new Dictionary<Type, YuoComponent>();
             ChildComponents = new MultiMap<Type, YuoComponent>();
-            Children = new List<Main.Ecs.YuoEntity>();
+            Children = new List<YuoEntity>();
             //EntityComponent为基础组件,无法移除,不会显示在组件列表中,但当销毁时会自动移除
             //可以通过获取EntityComponent是否为null来判断Entity是否释放
             EntityData = new EntityComponent();
             EntityData.Entity = this;
-            EntityData.Id = IDGenerater.GetID(this);
 
-            World.Instance.AddComponet(this, EntityData);
+            EntityData.Id = IDGenerate.GetID(this);
+
+            World.Instance.AddComponent(this, EntityData);
             World.Instance.RegisterEntity(this);
+            // $"Add Entity{EntityData.Id}".Log();
         }
 
         public YuoEntity(long id)
         {
             Components = new Dictionary<Type, YuoComponent>();
             ChildComponents = new MultiMap<Type, YuoComponent>();
-            Children = new List<Main.Ecs.YuoEntity>();
+            Children = new List<YuoEntity>();
+            //EntityComponent为基础组件,无法移除,不会显示在组件列表中,但当销毁时会自动移除
+            //可以通过获取EntityComponent是否为null来判断Entity是否释放
             EntityData = new EntityComponent();
             EntityData.Entity = this;
+
             EntityData.Id = id;
 
-            World.Instance.AddComponet(this, EntityData);
+            World.Instance.AddComponent(this, EntityData);
             World.Instance.RegisterEntity(this);
+            // $"Add Entity{EntityData.Id}".Log();
+        }
+
+        public YuoEntity(string name) : this(name.GetHashCode())
+        {
+            EntityName = name;
         }
 
         public T GetComponent<T>() where T : YuoComponent
@@ -75,25 +83,36 @@ namespace YuoTools.Main.Ecs
 
         public YuoComponent GetComponent(Type type)
         {
-            if (Components.ContainsKey(type))
-                return Components[type];
-            return null;
+            if (IsDisposed) return null;
+            return Components.ContainsKey(type) ? Components[type] : null;
         }
 
-        public void SetComponent<T>(T component) where T : YuoComponent
+        public bool ContainsComponent(Type type)
         {
+            return Components.ContainsKey(type);
+        }
+
+        public bool ContainsComponent<T>() where T : YuoComponent
+        {
+            return ContainsComponent(typeof(T));
+        }
+
+        public void SetComponent<T>(T component, Type componentType = null) where T : YuoComponent
+        {
+            if (componentType != null) component.SetComponentType(componentType);
             var componentTemp = GetComponent(component.Type);
             if (componentTemp == null)
             {
                 component.Entity = this;
                 Components.Add(component.Type, component);
-                World.Instance.AddComponet(this, component);
+                Parent?.ChildComponents.AddItem(component.Type, component);
+                World.Instance.AddComponent(this, component);
             }
             else
             {
                 Components[component.Type] = component;
                 component.Entity = this;
-                World.Instance.SetComponet(componentTemp, component);
+                World.Instance.SetComponent(componentTemp, component);
             }
         }
 
@@ -103,7 +122,9 @@ namespace YuoTools.Main.Ecs
             if (Activator.CreateInstance(type) is not YuoComponent component) return null;
             component.Entity = this;
             Components.Add(type, component);
-            World.Instance.AddComponet(this, component, type);
+            Parent?.ChildComponents.AddItem(type, component);
+            World.Instance.AddComponent(this, component, type);
+
             return component;
         }
 
@@ -114,7 +135,7 @@ namespace YuoTools.Main.Ecs
             component.Entity = this;
             var type = typeof(T);
             Components.Add(type, component);
-            World.Instance.AddComponet(this, component);
+            World.Instance.AddComponent(this, component);
             Parent?.AddChildComponent(type, component);
             return component;
         }
@@ -152,40 +173,36 @@ namespace YuoTools.Main.Ecs
             if (component == null || !Components.ContainsKey(component.Type)) return;
             var connect = component.ConnectedType;
             Components.Remove(component.Type);
-            World.Instance.RemoveComponet(this, component);
+            World.Instance.RemoveComponent(this, component);
             if (Parent != null)
                 Parent.RemoveChildComponent(component);
             if (connect != null) RemoveComponent(connect);
         }
 
-        private void RemoveChildComponent(YuoComponent component)
-        {
-            if (component == null) return;
-            ChildComponents.RemoveItem(component.Type, component);
-        }
-
         public T GetChild<T>(int index) where T : YuoComponent
         {
             var cs = ChildComponents[typeof(T)];
-            return cs is { Count: > 0 } ? cs[index] as T : null;
+            return cs is {Count: > 0} ? cs[index] as T : null;
         }
 
-        public List<T> GetChilds<T>() where T : YuoComponent
+        public List<T> GetChildren<T>() where T : YuoComponent
         {
+            var children = new List<T>();
             if (ChildComponents.TryGetValue(typeof(T), out var cs))
             {
-                return cs as List<T>;
+                foreach (var item in cs)
+                {
+                    children.Add(item as T);
+                }
             }
 
-            return null;
+            return children;
         }
-
-        public List<Main.Ecs.YuoEntity> GetAllChild() => Children;
 
         public T GetChild<T>() where T : YuoComponent
         {
             var cs = ChildComponents[typeof(T)];
-            return cs is { Count: > 0 } ? cs[0] as T : null;
+            return cs is {Count: > 0} ? cs[0] as T : null;
         }
 
         public T AddChild<T>(long entityID = long.MinValue) where T : YuoComponent, new()
@@ -193,29 +210,44 @@ namespace YuoTools.Main.Ecs
             return AddChild(typeof(T), entityID) as T;
         }
 
+        public T AddChild<T>(string name) where T : YuoComponent, new()
+        {
+            var com = AddChild(typeof(T), name.GetHashCode()) as T;
+            if (com != null) com.Entity.EntityName = name;
+            return com;
+        }
+
         public YuoComponent AddChild(Type type, long entityID = long.MinValue)
         {
-            var child = entityID != long.MinValue ? new Main.Ecs.YuoEntity(entityID) : new Main.Ecs.YuoEntity();
+            var child = entityID != long.MinValue ? new YuoEntity(entityID) : new YuoEntity();
             child.Parent = this;
             var component = child.AddComponent(type);
             AddChildComponent(type, component);
             return component;
         }
 
-        public Main.Ecs.YuoEntity AddChild(long entityID = long.MinValue)
+        public YuoEntity AddChild(long entityID = long.MinValue)
         {
-            var child = entityID != long.MinValue ? new Main.Ecs.YuoEntity(entityID) : new Main.Ecs.YuoEntity();
+            var child = entityID != long.MinValue ? new YuoEntity(entityID) : new YuoEntity();
             child.Parent = this;
             var type = typeof(EntityComponent);
             AddChildComponent(type, child.EntityData);
             return child;
         }
 
-        bool _isDisposed = false;
-
-        public void RemoveChild(Main.Ecs.YuoEntity entity)
+        public YuoEntity AddChild(string entityName)
         {
-            if (!_isDisposed)
+            var child = new YuoEntity(entityName.GetHashCode());
+            child.EntityName = entityName;
+            child.Parent = this;
+            var type = typeof(EntityComponent);
+            AddChildComponent(type, child.EntityData);
+            return child;
+        }
+
+        public void RemoveChild(YuoEntity entity)
+        {
+            if (!IsDisposed)
             {
                 if (Children.Contains(entity))
                     Children.Remove(entity);
@@ -227,37 +259,68 @@ namespace YuoTools.Main.Ecs
             }
         }
 
+        private void RemoveChildComponent(YuoComponent component)
+        {
+            if (component == null) return;
+            ChildComponents.RemoveItem(component.Type, component);
+        }
+
+        internal void SetParent(YuoEntity parent)
+        {
+            if (Parent != null)
+            {
+                Parent.RemoveChild(this);
+            }
+
+            Parent = parent;
+        }
+
+        public bool IsDisposed { get; private set; }
+
         /// <summary>
-        /// 释放资源
+        /// 释放实体,不要在System中调用,如需释放请调用Destroy
         /// </summary>
         public void Dispose()
         {
-            if (_isDisposed) return;
-            _isDisposed = true;
+            if (IsDisposed) return;
+            IsDisposed = true;
             if (Parent != null) Parent.RemoveChild(this);
             World.Instance.UnRegisterEntity(this);
             foreach (var item in Components.Values)
             {
-                World.Instance.RemoveComponet(this, item);
+                World.Instance.RemoveComponent(this, item);
                 item.Dispose();
             }
 
-            foreach (var item in ChildComponents.Values)
+            // foreach (var item in ChildComponents.Values)
+            // {
+            //     foreach (var entity in item)
+            //     {
+            //         entity.Dispose();
+            //     }
+            // }
+            
+            foreach (var yuoEntity in Children)
             {
-                foreach (var entity in item)
-                {
-                    entity.Dispose();
-                }
+                yuoEntity.Dispose();
             }
 
             Components.Clear();
             ChildComponents.Clear();
             ChildComponents = null;
 
-            World.Instance.RemoveComponet(this, EntityData);
+            World.Instance.RemoveComponent(this, EntityData);
             EntityData.Dispose();
             EntityData = null;
-            _isDisposed = true;
+            IsDisposed = true;
+        }
+
+        /// <summary>
+        /// 扔进回收站,这一帧结束后会被回收
+        /// </summary>
+        public void Destroy()
+        {
+            World.DestroyEntity(this);
         }
     }
 }

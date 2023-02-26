@@ -35,25 +35,25 @@ namespace YuoTools.Chat
 
         private void Start()
         {
-            us.Add(new UserData() { UserName = "ÏµÍ³ÌáÊ¾", Head = Heads[0] });
-            //´´½¨ÓÃ»§
+            us.Add(new UserData() { UserName = "ç³»ç»Ÿæç¤º", Head = Heads[0] });
+            //åˆ›å»ºç”¨æˆ·
             for (int i = 0; i < 10; i++)
             {
                 UserData user = new UserData();
-                user.UserName = $"ÓÃ»§ { Random.Range(0, 99999).ToString("00000")} ";
+                user.UserName = $"ç”¨æˆ· { Random.Range(0, 99999).ToString("00000")} ";
                 user.Head = Heads[i];
                 us.Add(user);
             }
-            //ÉèÖÃµ±Ç°ÓÃ»§
+            //è®¾ç½®å½“å‰ç”¨æˆ·
             Player = us[4].UserName;
 
-            //ÏÈÉú³ÉÒ»ÏÂËæ»úµÄÏûÏ¢
+            //å…ˆç”Ÿæˆä¸€ä¸‹éšæœºçš„æ¶ˆæ¯
             //InitMessage();
 
-            //Ìí¼ÓuiÊÂ¼ş
+            //æ·»åŠ uiäº‹ä»¶
             TMPText.onSubmit.AddListener(x => YuoSendMessage());
             send.onClick.AddListener(() => YuoSendMessage());
-            //YuoInput.Instance.Add(
+            //YuoInput.Get.Add(
             //    new YuoInput.InputItem("Test")
             //    {
             //        key = KeyCode.A,
@@ -83,7 +83,7 @@ namespace YuoTools.Chat
             {
                 MessageData data = new MessageData();
                 data.user = us[Random.Range(0, 9)];
-                //data.Message = $"ÕâÊÇµÚ{i}¾ä»°,ÊÇ {data.user.UserName}µÄºúÑÔÂÒÓï";
+                //data.Message = $"è¿™æ˜¯ç¬¬{i}å¥è¯,æ˜¯ {data.user.UserName}çš„èƒ¡è¨€ä¹±è¯­";
                 int a = Random.Range(0, 100);
                 for (int j = 0; j < a; j++)
                 {
@@ -152,7 +152,7 @@ namespace YuoTools.Chat
             {
                 MessageData data = new MessageData();
                 data.user = us[Random.Range(0, 9)];
-                //data.Message = $"ÕâÊÇµÚ{i}¾ä»°,ÊÇ {data.user.UserName}µÄºúÑÔÂÒÓï";
+                //data.Message = $"è¿™æ˜¯ç¬¬{i}å¥è¯,æ˜¯ {data.user.UserName}çš„èƒ¡è¨€ä¹±è¯­";
                 int a = Random.Range(0, 100);
                 for (int j = 0; j < a; j++)
                 {
@@ -190,7 +190,7 @@ namespace YuoTools.Chat
             {
                 MessageData data = new MessageData();
                 data.user = us[Random.Range(0, 9)];
-                //data.Message = $"ÕâÊÇµÚ{i}¾ä»°,ÊÇ {data.user.UserName}µÄºúÑÔÂÒÓï";
+                //data.Message = $"è¿™æ˜¯ç¬¬{i}å¥è¯,æ˜¯ {data.user.UserName}çš„èƒ¡è¨€ä¹±è¯­";
                 int a = Random.Range(0, 100);
                 for (int j = 0; j < a; j++)
                 {

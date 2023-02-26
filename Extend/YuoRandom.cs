@@ -25,7 +25,7 @@ namespace YuoTools.ECS
 
         public static uint RandUInt32()
         {
-            return (uint) random.Next();
+            return (uint)random.Next();
         }
 
         public static long RandInt64()
@@ -54,7 +54,7 @@ namespace YuoTools.ECS
             }
 
             long num = maxValue - minValue;
-            return minValue + (long) (random.NextDouble() * num);
+            return minValue + (long)(random.NextDouble() * num);
         }
 
         public static bool RandomBool()
@@ -98,7 +98,8 @@ namespace YuoTools.ECS
         }
     }
 
-    [YuoSave("随机控制器")]
+    [YuoSave(saveName: "随机控制器")]
+    [AutoAddToMain()]
     public class YuoRandom : YuoComponent
     {
         private static YuoRandom _instance;

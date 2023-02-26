@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using ET;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.UI;
-using YuoTools.ECS;
 using YuoTools.Main.Ecs;
 
 namespace YuoTools.UI
@@ -18,17 +16,21 @@ namespace YuoTools.UI
         [LabelText("模块UI")] [ReadOnly] [Tooltip("悬浮在其他界面之上的UI")]
         public bool ModuleUI = false;
 
+        [HideInInspector] public bool DefShow = true;
         [HideInInspector] public bool AutoShow = true;
         [HideInInspector] public bool AutoHide = true;
     }
 
-    public partial class UIManagerComponent : YuoComponent
+    [AutoAddToMain()]
+    public partial class UIManagerComponent : YuoComponentInstance<UIManagerComponent>
     {
         [ReadOnly] [SerializeField] Dictionary<string, UIComponent> UiItems = new();
         [ReadOnly] [SerializeField] Dictionary<Type, UIComponent> UiItemsType = new();
         [ReadOnly] [SerializeField] List<UIComponent> ModuleUiItems = new();
 
         public string DefWindow = "Test";
+
+        public override string Name => "UI管理器";
 
         [ReadOnly] [SerializeField] List<UIComponent> OpenItems = new List<UIComponent>();
 
@@ -39,7 +41,6 @@ namespace YuoTools.UI
         [ReadOnly] public LoadType loadType = LoadType.Resources;
 
         Transform _transform;
-        public static UIManagerComponent Instance => World.Main.GetComponent<UIManagerComponent>();
 
         public Transform Transform
         {
@@ -47,7 +48,7 @@ namespace YuoTools.UI
             {
                 if (_transform == null)
                 {
-                    _transform = GameObject.Find("MainCanvas").transform;
+                    _transform = GameObject.Find("Canvas").transform;
                 }
 
                 return _transform;
@@ -74,26 +75,46 @@ namespace YuoTools.UI
     /// </summary>
     public class TopViewComponent : YuoComponent
     {
+        public override string Name => "当前UI处于顶部";
     }
 
     #region 接口
 
+    /// <summary>
+    ///  当UI打开时调用一次
+    /// </summary>
     public interface IUIOpen : ISystemTag
     {
     }
 
+    /// <summary>
+    ///  当UI关闭时调用一次
+    /// </summary>
     public interface IUIClose : ISystemTag
     {
     }
 
+    /// <summary>
+    /// 在UI创建时调用一次,在Awake之后
+    /// </summary>
     public interface IUICreate : ISystemTag
     {
     }
 
+    /// <summary>
+    ///  当UI处于顶层时调用一次
+    /// </summary>
     public interface IUIActive : ISystemTag
     {
     }
 
+    /// <summary>
+    ///  UI手动切换自适应时调用
+    /// </summary>
+    public interface IUIAdaption : ISystemTag
+    {
+    }
+    
     public static partial class SystemType
     {
         public static readonly Type UIOpen = typeof(IUIOpen);

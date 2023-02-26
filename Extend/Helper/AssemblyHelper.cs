@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Mono.Cecil;
+using UnityEngine;
 
 namespace YuoTools.Extend.Helper
 {
@@ -9,7 +11,7 @@ namespace YuoTools.Extend.Helper
         public static Dictionary<string, Type> GetAssemblyTypes(params Assembly[] args)
         {
             var types = new Dictionary<string, Type>();
-
+            
             foreach (var ass in args)
             foreach (var type in ass.GetTypes())
                 types[type.Name] = type;
@@ -26,5 +28,7 @@ namespace YuoTools.Extend.Helper
         {
             return Assembly.Load(System.IO.File.ReadAllBytes(path));
         }
+
+        public static string ModPath() => $"{Application.dataPath}/../Mod";
     }
 }

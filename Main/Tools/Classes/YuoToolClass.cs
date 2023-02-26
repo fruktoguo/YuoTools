@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -45,9 +44,9 @@ namespace YuoTools
 
         public T Get(string key)
         {
-            if (Options.ContainsKey(key))
+            if (Options.TryGetValue(key, out var option))
             {
-                return Options[key];
+                return option;
             }
             else
             {

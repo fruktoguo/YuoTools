@@ -131,7 +131,6 @@ MonoBehaviour:
   DontIstantiate: 0
   Active: 1
   ModuleUI: 0
-  openTools: 0
   maskableGraphics: []
 --- !u!114 &245352969240212680
 MonoBehaviour:
@@ -219,7 +218,7 @@ MonoBehaviour:
   id: 
   isRelative: 0
   isFrom: 1
-  isIndependentUpdate: 1
+  isIndependentUpdate: 0
   autoKill: 0
   autoGenerate: 1
   isActive: 1
@@ -248,6 +247,7 @@ MonoBehaviour:
   optionalInt0: 0
   optionalRotationMode: 0
   optionalScrambleMode: 0
+  optionalShakeRandomnessMode: 0
   optionalString: 
 --- !u!1 &6243626396238694729
 GameObject:

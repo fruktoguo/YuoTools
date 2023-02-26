@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using static YuoTools.YuoAnima;
@@ -17,7 +17,7 @@ namespace YuoTools
 
         public void ReComputeHash()
         {
-            List<string> names = new List<string>(); ;
+            List<string> names = new List<string>();
             foreach (var item in HashToName.Values)
             {
                 names.Add(item);
@@ -66,7 +66,6 @@ namespace YuoTools
         [Button("刷新")]
         public void Refresh()
         {
-            //var eac = animator.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
             HashToName = new Dictionary<int, string>();
             Animas = new Dictionary<string, YuoAnimaItem>();
             switch (animatorType)
@@ -75,7 +74,14 @@ namespace YuoTools
                     foreach (var item in animatorController.layers[0].stateMachine.states)
                     {
                         HashToName.Add(item.state.nameHash, item.state.name);
-                        var anima = new YuoAnimaItem();
+                        var anima = new YuoAnimaItem
+                        {
+                            AnimaName = null,
+                            Clip = null,
+                            OnEnter = null,
+                            OnExit = null,
+                            Speed = 0
+                        };
                         anima.AnimaName = item.state.name;
                         anima.Clip = item.state.motion as AnimationClip;
                         Animas.Add(item.state.name, anima);
@@ -84,17 +90,18 @@ namespace YuoTools
 
                 case AnimatorType.Override:
                     var eac = animatorOverrideController.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
-                    foreach (var item in eac.layers[0].stateMachine.states)
-                    {
-                        HashToName.Add(item.state.nameHash, item.state.name);
-                        var anima = new YuoAnimaItem();
-                        anima.AnimaName = item.state.name;
-                        anima.Clip = animatorOverrideController[item.state.motion as AnimationClip];
-                        Animas.Add(item.state.name, anima);
-                    }
-                    break;
+                    if (eac != null)
+                        foreach (var item in eac.layers[0].stateMachine.states)
+                        {
+                            HashToName.Add(item.state.nameHash, item.state.name);
+                            var anima = new YuoAnimaItem
+                            {
+                                AnimaName = item.state.name,
+                                Clip = animatorOverrideController[item.state.motion as AnimationClip]
+                            };
+                            Animas.Add(item.state.name, anima);
+                        }
 
-                default:
                     break;
             }
         }

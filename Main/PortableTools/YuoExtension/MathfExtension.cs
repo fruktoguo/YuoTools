@@ -6,6 +6,50 @@ namespace YuoTools
     public static class MathfExtension
     {
         /// <summary>
+        /// 获取个位数
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static int SingleDigits(this int value)
+        {
+            return value % 10;
+        }
+
+        /// <summary>
+        ///  获取十位数
+        /// </summary>
+        public static int TenDigits(this int value)
+        {
+            return value / 10 % 10;
+        }
+        
+        /// <summary>
+        /// 获取个位数
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static int SingleDigits(this float value)
+        {
+            return (int)(value % 10);
+        }
+        
+        /// <summary>
+        ///  获取十位数
+        /// </summary>
+        public static int TenDigits(this float value)
+        {
+            return (int)(value / 10 % 10);
+        }
+        
+        /// <summary>
+        ///  小数点后几位
+        /// </summary>
+        public static int DecimalPlace(this float value, int count = 1)
+        {
+            return (int)(value * 10.Power(count) % 10.Power(count));
+        }
+
+        /// <summary>
         /// 只有返回值不修改原值
         /// </summary>
         /// <param name="i"></param>
@@ -100,6 +144,11 @@ namespace YuoTools
             return Mathf.Abs(i);
         }
 
+        public static bool IsSingle(this int i)
+        {
+            return i % 2 == 1;
+        }
+        
         /// <summary>
         /// 另一种取余
         /// 大于0就是正常的取余,小于0会取相反的,-15%4==7
@@ -110,6 +159,11 @@ namespace YuoTools
         public static int Residual(this int value, int divisor)
         {
             return value % divisor >= 0 ? value % divisor : divisor + value % divisor;
+        }
+
+        public static float Residual(this float value, float divisor)
+        {
+            return value >= 0 ? value % divisor : divisor + value % divisor;
         }
 
         /// <summary>
@@ -171,7 +225,7 @@ namespace YuoTools
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public static float NonZero(this float i)
+        public static float NoZero(this float i)
         {
             return i.ApEqual(0, 0.000001f) ? 0.000001f : i;
         }
@@ -201,7 +255,6 @@ namespace YuoTools
             b = !b;
             return b;
         }
-
 
         /// <summary>
         /// 返回一个随机的bool值
@@ -236,6 +289,16 @@ namespace YuoTools
             return Temp.V3.SetPos(a.x * b.x, a.y * b.y, a.z * b.z);
         }
 
+        public static float Power(this float p, float q)
+        {
+            return Mathf.Pow(p, q);
+        }
+
+        public static float Power(this int p, int q)
+        {
+            return Mathf.Pow(p, q);
+        }
+
         /// <summary>
         /// 乘方
         /// </summary>
@@ -253,7 +316,65 @@ namespace YuoTools
         /// <returns></returns>
         public static int PowTwo(this int p)
         {
-            return (int) Mathf.Pow(p, 2);
+            return (int)Mathf.Pow(p, 2);
+        }
+
+        public static float PowThree(this float p)
+        {
+            return Mathf.Pow(p, 3);
+        }
+
+        public static int PowThree(this int p)
+        {
+            return (int)Mathf.Pow(p, 3);
+        }
+
+        public static int GainTo(this ref int i, int target, int unit = 1)
+        {
+            i = RGainTo(target, unit);
+            return i;
+        }
+
+        public static int RGainTo(this int i, int target, int unit = 1)
+        {
+            if (i < target)
+            {
+                i += unit;
+                if (i > target)
+                    i = target;
+            }
+            else if (i > target)
+            {
+                i -= unit;
+                if (i < target)
+                    i = target;
+            }
+            return i;
+        }
+
+        
+        
+        public static float RGainTo(this float i, float target, float unit = 1)
+        {
+            if (i < target)
+            {
+                i += unit;
+                if (i > target)
+                    i = target;
+            }
+            else if (i > target)
+            {
+                i -= unit;
+                if (i < target)
+                    i = target;
+            }
+            return i;
+        }
+        
+        public static float GainTo(this ref float i, float target, float unit = 1)
+        {
+            i = RGainTo(target, unit);
+            return i;
         }
 
         /// <summary>
@@ -270,6 +391,12 @@ namespace YuoTools
             return (In - InMin) * (OutMax - OutMin) / (InMax - InMin) + OutMin;
         }
 
+        public static float RemapClamp(this float In, float InMin, float InMax, float OutMin, float OutMax)
+        {
+            var result = In.Remap(InMin, InMax, OutMin, OutMax);
+            return OutMin <= OutMax ? result.RClamp(OutMin, OutMax) : result.RClamp(OutMax, OutMin);
+        }
+
         /// <summary>
         /// int从一个区间映射到另一个区间
         /// </summary>
@@ -282,6 +409,12 @@ namespace YuoTools
         public static int Remap(this int In, int InMin, int InMax, int OutMin, int OutMax)
         {
             return (In - InMin) * (OutMax - OutMin) / (InMax - InMin) + OutMin;
+        }
+
+        public static int RemapClamp(this int In, int InMin, int InMax, int OutMin, int OutMax)
+        {
+            var result = In.Remap(InMin, InMax, OutMin, OutMax);
+            return OutMin <= OutMax ? result.RClamp(OutMin, OutMax) : result.RClamp(OutMax, OutMin);
         }
 
         /// <summary>
@@ -440,7 +573,7 @@ namespace YuoTools
                 }
             }
 
-            return new Line() {start = start, end = end, lenth = lenth};
+            return new Line() { start = start, end = end, lenth = lenth };
         }
 
         /// <summary>
@@ -467,7 +600,7 @@ namespace YuoTools
                 }
             }
 
-            return new LineTran() {start = start, end = end, lenth = lenth};
+            return new LineTran() { start = start, end = end, lenth = lenth };
         }
     }
 

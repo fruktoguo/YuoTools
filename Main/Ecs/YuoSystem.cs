@@ -21,7 +21,7 @@ namespace YuoTools.Main.Ecs
         public override void Init(World world)
         {
             _type1 = typeof(T1);
-            world.RegisteSystem(this, typeof(T1));
+            world.RegisterSystem(this, typeof(T1));
         }
 
         public override Type[] InfluenceTypes() => new[] { _type1 };
@@ -62,6 +62,12 @@ namespace YuoTools.Main.Ecs
             }
         }
 
+        internal override void Clear()
+        {
+            _components1.Clear();
+            base.Clear();
+        }
+
         protected abstract void Run(T1 component);
     }
 
@@ -77,8 +83,8 @@ namespace YuoTools.Main.Ecs
         {
             _type1 = typeof(T1);
             _type2 = typeof(T2);
-            world.RegisteSystem(this, _type1);
-            world.RegisteSystem(this, _type2);
+            world.RegisterSystem(this, _type1);
+            world.RegisterSystem(this, _type2);
         }
 
         public override Type[] InfluenceTypes() => new[] { _type1, _type2 };
@@ -130,6 +136,13 @@ namespace YuoTools.Main.Ecs
             }
         }
 
+        internal override void Clear()
+        {
+            _components1.Clear();
+            _components2.Clear();
+            base.Clear();
+        }
+
         protected abstract void Run(T1 component1, T2 component2);
     }
 
@@ -150,9 +163,9 @@ namespace YuoTools.Main.Ecs
             _type1 = typeof(T1);
             _type2 = typeof(T2);
             _type3 = typeof(T3);
-            world.RegisteSystem(this, _type1);
-            world.RegisteSystem(this, _type2);
-            world.RegisteSystem(this, _type3);
+            world.RegisterSystem(this, _type1);
+            world.RegisterSystem(this, _type2);
+            world.RegisterSystem(this, _type3);
         }
 
         public override Type[] InfluenceTypes() => new[] { _type1, _type2, _type3 };
@@ -212,6 +225,14 @@ namespace YuoTools.Main.Ecs
             }
         }
 
+        internal override void Clear()
+        {
+            _components1.Clear();
+            _components2.Clear();
+            _components3.Clear();
+            base.Clear();
+        }
+
         protected abstract void Run(T1 component1, T2 component2, T3 component3);
     }
 
@@ -235,10 +256,10 @@ namespace YuoTools.Main.Ecs
             _type2 = typeof(T2);
             _type3 = typeof(T3);
             _type4 = typeof(T4);
-            world.RegisteSystem(this, _type1);
-            world.RegisteSystem(this, _type2);
-            world.RegisteSystem(this, _type3);
-            world.RegisteSystem(this, _type4);
+            world.RegisterSystem(this, _type1);
+            world.RegisterSystem(this, _type2);
+            world.RegisterSystem(this, _type3);
+            world.RegisterSystem(this, _type4);
         }
 
         public override Type[] InfluenceTypes() => new[] { _type1, _type2, _type3, _type4 };
@@ -307,6 +328,15 @@ namespace YuoTools.Main.Ecs
             }
         }
 
+        internal override void Clear()
+        {
+            _components1.Clear();
+            _components2.Clear();
+            _components3.Clear();
+            _components4.Clear();
+            base.Clear();
+        }
+
         protected abstract void Run(T1 component1, T2 component2, T3 component3, T4 component4);
     }
 
@@ -339,11 +369,11 @@ namespace YuoTools.Main.Ecs
             _type3 = typeof(T3);
             _type4 = typeof(T4);
             _type5 = typeof(T5);
-            world.RegisteSystem(this, _type1);
-            world.RegisteSystem(this, _type2);
-            world.RegisteSystem(this, _type3);
-            world.RegisteSystem(this, _type4);
-            world.RegisteSystem(this, _type5);
+            world.RegisterSystem(this, _type1);
+            world.RegisterSystem(this, _type2);
+            world.RegisterSystem(this, _type3);
+            world.RegisterSystem(this, _type4);
+            world.RegisterSystem(this, _type5);
         }
 
         public override Type[] InfluenceTypes() => new[] { _type1, _type2, _type3, _type4, _type5 };
@@ -418,6 +448,16 @@ namespace YuoTools.Main.Ecs
             {
                 e.LogError();
             }
+        }
+
+        internal override void Clear()
+        {
+            _components1.Clear();
+            _components2.Clear();
+            _components3.Clear();
+            _components4.Clear();
+            _components5.Clear();
+            Entitys.Clear();
         }
 
         protected abstract void Run(T1 component1, T2 component2, T3 component3, T4 component4, T5 component5);

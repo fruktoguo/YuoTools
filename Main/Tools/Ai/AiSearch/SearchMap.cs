@@ -10,7 +10,7 @@ namespace YuoTools
 
         public SearchMap(Vector2Int MapSize)
         {
-            //³õÊ¼»¯µØÍ¼
+            //åˆå§‹åŒ–åœ°å›¾
             Map = new MapPoint[MapSize.x][];
             for (int x = 0; x < MapSize.x; x++)
             {

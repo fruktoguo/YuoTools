@@ -53,7 +53,7 @@ namespace YuoTools.Extend.UI
                 yuoLanguageData.Video.Add(item, null);
             }
 
-            await FileHelper.WriteAllText(path, JsonConvert.SerializeObject(yuoLanguageData));
+            await FileHelper.WriteAllTextAsync(path, JsonConvert.SerializeObject(yuoLanguageData));
 
             return path;
         }
@@ -62,7 +62,7 @@ namespace YuoTools.Extend.UI
         {
             var save = World.Main.GetComponent<SaveManagerComponent>();
             var path = save.GetFilePath($"Language/{languageType}.json");
-            var json = await FileHelper.ReadAllText(path);
+            var json = await FileHelper.ReadAllTextAsync(path);
             data = JsonConvert.DeserializeObject<YuoLanguageData>(json);
         }
     }
@@ -71,7 +71,7 @@ namespace YuoTools.Extend.UI
     {
         public static string Language(this string key)
         {
-            return YuoLanguageManager.Instance.GetLanguage(key);
+            return YuoLanguageManager.Get.GetLanguage(key);
         }
     }
 
